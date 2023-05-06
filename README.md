@@ -3,7 +3,8 @@
 Telegram bot for your upwork feed
 
 ## Installation
-test3
+
+Just add bot
 
 ## Usage
 
