@@ -32,3 +32,11 @@ Table users created successfully
 Table data created successfully
 [2023-05-07 15:03:27] 4. Close connection
 
+[2023-05-07 16:15:32] 1. Create database
+Database telegram_bot created successfully
+[2023-05-07 16:15:32] 2. Create table users
+Table users created successfully
+[2023-05-07 16:15:32] 3. Create table data
+Table data created successfully
+[2023-05-07 16:15:32] 4. Close connection
+
