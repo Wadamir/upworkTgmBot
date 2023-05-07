@@ -44,12 +44,16 @@ if (mysqli_query($conn, $sql)) {
 file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 2. Create table ' . $table_users . PHP_EOL, FILE_APPEND);
 $sql = "CREATE TABLE IF NOT EXISTS $table_users (
         `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        `name` varchar(256) DEFAULT NULL,
-        `is_deleted` tinyint(1) DEFAULT NULL,
+        `is_bot` tinyint(1) DEFAULT NULL,
+        `first_name` varchar(256) DEFAULT NULL,
+        `last_name` varchar(256) DEFAULT NULL,
+        `username` varchar(256) DEFAULT NULL,
+        `language_code` varchar(16) DEFAULT NULL,
+        `is_premium` tinyint(1) DEFAULT NULL,
         `chat_id` varchar(256) DEFAULT NULL,
         `link` varchar(256) DEFAULT NULL,
-        `refresh_time` bigint DEFAULT '5',
-        `last_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `refresh_time` bigint DEFAULT NULL,
+        `date_updated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
 
