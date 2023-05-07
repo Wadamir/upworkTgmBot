@@ -1,26 +1,8 @@
 <?php
-
 require_once __DIR__ . '/vendor/autoload.php';
-
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-
-$token = env('TOKEN', null);
-if (!$token) {
-    throw new ErrorException('Не указан токен бота');
-} else {
-    echo "Токен бота: $token" . PHP_EOL;
-}
-
-$url = "https://api.telegram.org/bot$token/sendMessage";
-
-$getQuery = array(
-    "chat_id"   => '-1001071760041',
-    "text"      => "Не переживайте так... Все будет хорошо!",
-    "parse_mode" => "html"
-);
-echo curl($url, $getQuery);
 
 function curl($url, $data = [], $method = 'GET', $options = [])
 {
