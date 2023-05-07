@@ -10,7 +10,7 @@ file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Start 
 
 $token = env('TOKEN', null);
 if (!$token) {
-    file_get_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token not found' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token not found' . PHP_EOL, FILE_APPEND);
     throw new ErrorException('Не указан токен бота');
 }
 

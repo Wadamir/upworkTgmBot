@@ -6,7 +6,15 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start ' . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
+
+$token = env('TOKEN', null);
+if (!$token) {
+    file_put_contents($log_dir . '/parser.log', ' | Token not found' . PHP_EOL, FILE_APPEND);
+    throw new ErrorException('Не указан токен бота');
+}
+
+$path = "https://api.telegram.org/bot$token";
 
 $dbhost = env('MYSQL_HOST', 'localhost');
 $dbuser = env('MYSQL_USER', 'root');
@@ -17,25 +25,31 @@ $table_data = env('MYSQL_TABLE_DATA', 'data');
 // Create connection
 $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
 if (!$conn) {
-    file_put_contents($log_dir . '/parser.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/parser.log', ' | Connection failed' . PHP_EOL, FILE_APPEND);
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
 $sql = "SELECT * FROM $table_users WHERE link IS NOT NULL";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
-    file_put_contents($log_dir . '/parser.log', 'Links exists!' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/parser.log', ' | Links exists! ', FILE_APPEND);
     $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
     foreach ($rows as $row) {
         $link = $row['link'];
         $chat_id = $row['chat_id'];
         $refresh_time = $row['refresh_time'] * 60;
+        if ($refresh_time == 0) {
+            $refresh_time = 300;
+        }
+        // echo $refresh_time . PHP_EOL;
         $date_updated = $row['date_updated'];
         $date_added = $row['date_added'];
         $date_now = date('Y-m-d H:i:s');
         $date_diff = strtotime($date_now) - strtotime($date_updated);
+        // echo $date_diff . PHP_EOL;
         if ($date_diff > $refresh_time) {
-            file_put_contents($log_dir . '/parser.log', 'Time to update!' . PHP_EOL, FILE_APPEND);
+
+            file_put_contents($log_dir . '/parser.log', ' | Time to update!', FILE_APPEND);
 
             $xml = simplexml_load_file($link);
             foreach ($xml->channel->item as $item) {
@@ -79,7 +93,7 @@ if (mysqli_num_rows($result) > 0) {
                     // remove comma and convert to int
                     $budget = (int)str_replace(',', '', $budget);
                 } else {
-                    $budget = null;
+                    $budget = 0;
                 }
                 $matches = [];
                 $pattern = '/<br \/><b>Hourly Range<\/b>: \$([\d,]+)\.([\d,]+)-\$([\d,]+)\.([\d,]+)/';
@@ -87,126 +101,74 @@ if (mysqli_num_rows($result) > 0) {
                     $hourly_min = (int)$matches[1];
                     $hourly_max = (int)$matches[3];
                 } else {
-                    $hourly_range = null;
-                    $hourly_min = null;
-                    $hourly_max = null;
+                    $hourly_min = 0;
+                    $hourly_max = 0;
                 }
-                echo $title . ' | ' . $link . ' | ' . $posted_on . ' | ' . $category . ' | ' . $skills . ' | ' . $country . ' | ' . $budget . ' | ' . $hourly_min . ' | ' . $hourly_max . PHP_EOL;
-                echo PHP_EOL;
+                // echo $title . ' | ' . $link . ' | ' . $posted_on . ' | ' . $category . ' | ' . $skills . ' | ' . $country . ' | ' . $budget . ' | ' . $hourly_min . ' | ' . $hourly_max . PHP_EOL;
 
                 // Check if data exists
                 $sql = "SELECT * FROM $table_data WHERE link = '$link'";
                 $result = mysqli_query($conn, $sql);
 
-                if (mysqli_num_rows($result) > 0) {
-                    file_put_contents($log_dir . '/parser.log', 'Data exists!' . PHP_EOL, FILE_APPEND);
-                } else {
-                    file_put_contents($log_dir . '/parser.log', 'Data does not exist!' . PHP_EOL, FILE_APPEND);
+                if (mysqli_num_rows($result) === 0) {
                     // Insert data
                     $sql = "INSERT INTO $table_data (chat_id, title, link, posted_on, category, skills, country, budget, hourly_min, hourly_max) VALUES ('$chat_id', '$title', '$link', '$posted_on', '$category', '$skills', '$country', '$budget', '$hourly_min', '$hourly_max')";
-                    if (mysqli_query($conn, $sql)) {
-                        file_put_contents($log_dir . '/parser.log', 'Data inserted!' . PHP_EOL, FILE_APPEND);
-                    } else {
-                        file_put_contents($log_dir . '/parser.log', 'Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+                    if (!mysqli_query($conn, $sql)) {
+                        file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
                     }
                 }
             }
-
-            
         } else {
-            file_put_contents($log_dir . '/parser.log', 'Time to update: ' . $date_diff . PHP_EOL, FILE_APPEND);
+            file_put_contents($log_dir . '/parser.log', ' | Time to update: ' . $date_diff, FILE_APPEND);
         }
     }
 
     // Close connection
-    mysqli_close($conn);
-    return false;
+    // mysqli_close($conn);
 }
 
-$chatId = $update["message"]["chat"]["id"];
-$message = $update["message"]["text"];
-$message_type = $update["message"]["entities"][0]["type"];
+// file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send rss link to your channel");
 
-if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
-    $user_result = createUser($user_data);
-    if ($user_result) {
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send rss link to your channel");
-    } else {
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. If you want to change the channel, send me a new link");
-    }
-} elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
-    updateUser($user_data);
-    file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
-} else {
-    file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Try again, please");
-}
+// Send messages to telegram
+$sql = "SELECT * FROM $table_data WHERE sent_to_user = 0 OR sent_to_user IS NULL";
+$result = mysqli_query($conn, $sql);
+$counter = 0;
+if (mysqli_num_rows($result) > 0) {
+    $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    foreach ($rows as $row) {
+        $chat_id = $row['chat_id'];
+        $title = $row['title'];
+        $link = $row['link'];
+        $posted_on = $row['posted_on'];
+        $category = $row['category'];
+        $skills = $row['skills'];
+        $country = $row['country'];
+        $budget = $row['budget'];
+        $hourly_min = $row['hourly_min'];
+        $hourly_max = $row['hourly_max'];
 
-function createUser($user_data)
-{
-    global $log_dir;
-    $dbhost = env('MYSQL_HOST', 'localhost');
-    $dbuser = env('MYSQL_USER', 'root');
-    $dbpass = env('MYSQL_PASSWORD', '');
-    $dbname = env('MYSQL_DB', 'telegram_bot');
-    $table_users = env('MYSQL_TABLE_USERS', 'users');
-    $table_data = env('MYSQL_TABLE_DATA', 'data');
-    // Create connection
-    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
-    if (!$conn) {
-        file_put_contents($log_dir . '/parser.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
-        die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
-    }
-    // Check if user exists
-    $sql = "SELECT * FROM $table_users WHERE user_id = " . $user_data['user_id'];
-    $result = mysqli_query($conn, $sql);
-    if (mysqli_num_rows($result) > 0) {
-        file_put_contents($log_dir . '/parser.log', 'User already exists' . PHP_EOL, FILE_APPEND);
-        // Close connection
-        mysqli_close($conn);
-        return false;
-    } else {
-        $columns = implode(", ", array_keys($user_data));
-        $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
-        $values  = implode("', '", $escaped_values);
-        $sql = "INSERT INTO $table_users ($columns) VALUES ('$values')";
-        $result = mysqli_query($conn, $sql);
-        if (!$result) {
-            file_put_contents($log_dir . '/parser.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+        $message = "<b>$title</b>\n";
+        $message .= "<b>Category</b>: $category\n";
+        $message .= "<b>Skills</b>: $skills\n";
+        $message .= "<b>Country</b>: $country\n";
+        $message .= "<b>Budget</b>: $budget\n";
+        $message .= "<b>Hourly Range</b>: $hourly_min - $hourly_max\n";
+        $message .= "<b>Posted on</b>: $posted_on\n";
+        $message .= "<a href='$link'>Link</a>";
+
+        $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
+        file_get_contents($url);
+
+        // Update sent_to_user
+        $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
+        if (!mysqli_query($conn, $sql)) {
+            file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
         }
-        // Close connection
-        mysqli_close($conn);
-        return true;
+        $counter++;
     }
 }
 
+file_put_contents($log_dir . '/parser.log', ' | Total messages sent: ' . $counter . PHP_EOL, FILE_APPEND);
 
-function updateUser($user_data)
-{
-    global $log_dir;
 
-    $dbhost = env('MYSQL_HOST', 'localhost');
-    $dbuser = env('MYSQL_USER', 'root');
-    $dbpass = env('MYSQL_PASSWORD', '');
-    $dbname = env('MYSQL_DB', 'telegram_bot');
-    $table_users = env('MYSQL_TABLE_USERS', 'users');
-    $table_data = env('MYSQL_TABLE_DATA', 'data');
-    // Create connection
-    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
-    if (!$conn) {
-        file_put_contents($log_dir . '/parser.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
-        die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
-    }
-
-    $sql = "UPDATE $table_users SET link = '" . $user_data['link'] . "' WHERE chat_id = " . $user_data['chat_id'];
-    $result = mysqli_query($conn, $sql);
-
-    if ($result) {
-        $last_id = mysqli_insert_id($conn);
-        file_put_contents($log_dir . '/parser.log', "New record created successfully. Last inserted ID is: " . $last_id . PHP_EOL, FILE_APPEND);
-    } else {
-        file_put_contents($log_dir . '/parser.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
-    }
-    // Close connection
-    file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
-    mysqli_close($conn);
-}
+mysqli_close($conn);
