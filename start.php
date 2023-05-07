@@ -38,12 +38,12 @@ file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Receiv
 
 $user_data = [
     'id' => $update['message']['from']['id'],
-    'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false') ? 1 : null,
+    'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false' && $update['message']['from']['is_bot'] !== false) ? 1 : null,
     'first_name' => (isset($update['message']['from']['first_name']) && $update['message']['from']['first_name'] !== '') ? $update['message']['from']['first_name'] : null,
     'last_name' => (isset($update['message']['from']['last_name']) && $update['message']['from']['last_name'] !== '') ? $update['message']['from']['last_name'] : null,
     'username' => $update['message']['from']['username'],
     'language_code' => $update['message']['from']['language_code'],
-    'is_premium' => (isset($update['message']['from']['is_premium']) && $update['message']['from']['is_premium'] !== 'false') ? 1 : null,
+    'is_premium' => (isset($update['message']['from']['is_premium']) && $update['message']['from']['is_premium'] !== 'false' && $update['message']['from']['is_premium'] !== false) ? 1 : null,
     'chat_id' => $update['message']['chat']['id'],
     'link'  => $update['message']['text'],
 ];
