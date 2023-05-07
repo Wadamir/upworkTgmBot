@@ -67,7 +67,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
 function createUser($user_data)
 {
     global $log_dir;
-
+    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Create user' . PHP_EOL, FILE_APPEND);
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
     $dbpass = env('MYSQL_PASSWORD', '');
@@ -81,8 +81,10 @@ function createUser($user_data)
         die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
     $columns = implode(", ", array_keys($user_data));
+    file_put_contents($log_dir . '/start.log', 'Columns: ' . $columns . PHP_EOL, FILE_APPEND);
     $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
     $values  = implode("', '", $escaped_values);
+    file_put_contents($log_dir . '/start.log', 'Values: ' . $values . PHP_EOL, FILE_APPEND);
     $sql = "INSERT INTO $table_users($columns) VALUES ('$values')";
     $result = mysqli_query($conn, $sql);
     if ($result) {
