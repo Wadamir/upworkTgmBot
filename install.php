@@ -44,6 +44,7 @@ if (mysqli_query($conn, $sql)) {
 file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 2. Create table ' . $table_users . PHP_EOL, FILE_APPEND);
 $sql = "CREATE TABLE IF NOT EXISTS $table_users (
         `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `user_id` varchar(256) DEFAULT NULL,
         `is_bot` tinyint(1) DEFAULT NULL,
         `first_name` varchar(256) DEFAULT NULL,
         `last_name` varchar(256) DEFAULT NULL,
