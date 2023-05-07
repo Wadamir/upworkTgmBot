@@ -85,7 +85,8 @@ function createUser($user_data)
     $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
     $values  = implode("', '", $escaped_values);
     file_put_contents($log_dir . '/start.log', 'Values: ' . $values . PHP_EOL, FILE_APPEND);
-    $sql = "INSERT INTO $table_users($columns) VALUES ('$values')";
+    $sql = "INSERT INTO $table_users ($columns) VALUES ('$values')";
+    file_put_contents($log_dir . '/start.log', 'SQL: ' . $sql . PHP_EOL, FILE_APPEND);
     $result = mysqli_query($conn, $sql);
     if ($result) {
         $last_id = mysqli_insert_id($conn);
