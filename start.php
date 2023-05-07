@@ -47,6 +47,9 @@ $user_data = [
     'chat_id' => $update['message']['chat']['id'],
     'link'  => $update['message']['text'],
 ];
+
+file_get_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] User data: ' . json_encode($user_data) . PHP_EOL, FILE_APPEND);
+
 $chatId = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
 $message_type = $update["message"]["entities"][0]["type"];
