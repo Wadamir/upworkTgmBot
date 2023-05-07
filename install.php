@@ -36,10 +36,8 @@ if (!$conn) {
 $sql = "CREATE DATABASE IF NOT EXISTS $dbname";
 if (mysqli_query($conn, $sql)) {
     file_put_contents($log_dir . '/install.log', "Database $dbname created successfully" . PHP_EOL, FILE_APPEND);
-    echo "Database $dbname created successfully" . PHP_EOL;
 } else {
     file_put_contents($log_dir . '/install.log', "Error creating database $dbname" . PHP_EOL, FILE_APPEND);
-    echo "Error creating database $dbname: " . mysqli_error($conn) . PHP_EOL;
 }
 
 // 2. Create table users
@@ -58,15 +56,12 @@ $sql = "CREATE TABLE IF NOT EXISTS $table_users (
 if (!mysqli_select_db($conn, $dbname)) {
     file_put_contents($log_dir . '/install.log', 'Database NOT SELECTED' . PHP_EOL, FILE_APPEND);
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
-    echo "Database NOT SELECTED" . PHP_EOL;
 }
 
 if (mysqli_query($conn, $sql)) {
     file_put_contents($log_dir . '/install.log', "Table $table_users created successfully" . PHP_EOL, FILE_APPEND);
-    echo "Table $table_users created successfully" . PHP_EOL;
 } else {
     file_put_contents($log_dir . '/install.log', "Error creating table $table_users: " . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
-    echo "Error creating table $table_users: " . mysqli_error($conn) . PHP_EOL;
 }
 
 // 3. Create table data
@@ -88,15 +83,12 @@ $sql = "CREATE TABLE IF NOT EXISTS $table_data (
 if (!mysqli_select_db($conn, $dbname)) {
     file_put_contents($log_dir . '/install.log', 'Database NOT SELECTED' . PHP_EOL, FILE_APPEND);
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
-    echo "Database NOT SELECTED" . PHP_EOL;
 }
 
 if (mysqli_query($conn, $sql)) {
     file_put_contents($log_dir . '/install.log', "Table $table_data created successfully" . PHP_EOL, FILE_APPEND);
-    echo "Table $table_data created successfully" . PHP_EOL;
 } else {
     file_put_contents($log_dir . '/install.log', "Error creating table $table_data: " . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
-    echo "Error creating table $table_data: " . mysqli_error($conn) . PHP_EOL;
 }
 
 // 4. Close connection

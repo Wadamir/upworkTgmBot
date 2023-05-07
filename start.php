@@ -14,7 +14,6 @@ if (!$token) {
     throw new ErrorException('Не указан токен бота');
 } else {
     file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token found: ' . $token . PHP_EOL, FILE_APPEND);
-    echo "Токен бота: $token" . PHP_EOL;
 }
 /*
 $url = "https://api.telegram.org/bot$token/sendMessage";
@@ -70,10 +69,8 @@ function createUser()
     if ($result) {
         $last_id = mysqli_insert_id($conn);
         file_put_contents($log_dir . '/start.log', "New record created successfully. Last inserted ID is: " . $last_id . PHP_EOL, FILE_APPEND);
-        echo "New record created successfully. Last inserted ID is: " . $last_id . PHP_EOL;
     } else {
         file_put_contents($log_dir . '/start.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
-        echo "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL;
     }
     // Close connection
     file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
