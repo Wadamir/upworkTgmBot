@@ -1,9 +1,4 @@
 <?php
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
@@ -17,7 +12,7 @@ if (!$token) {
     file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token found: ' . $token . PHP_EOL, FILE_APPEND);
     echo "Токен бота: $token" . PHP_EOL;
 }
-
+/*
 $url = "https://api.telegram.org/bot$token/sendMessage";
 
 $getQuery = array(
@@ -26,14 +21,15 @@ $getQuery = array(
     "parse_mode"    => "html"
 );
 echo curl($url, $getQuery);
+*/
 
 $path = "https://api.telegram.org/bot$token";
 
 $get_content = file_get_contents("php://input");
-$update = json_decode($get_content, TRUE);
-if (!$update) {
+if (!$get_content) {
     exit;
 }
+$update = json_decode($get_content, TRUE);
 
 file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
