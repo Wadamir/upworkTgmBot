@@ -12,19 +12,7 @@ $token = env('TOKEN', null);
 if (!$token) {
     file_get_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token not found' . PHP_EOL, FILE_APPEND);
     throw new ErrorException('Не указан токен бота');
-} else {
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token found: ' . $token . PHP_EOL, FILE_APPEND);
 }
-/*
-$url = "https://api.telegram.org/bot$token/sendMessage";
-
-$getQuery = array(
-    "chat_id"       => '-1001071760041',
-    "text"          => "Не переживайте так... Все будет хорошо!",
-    "parse_mode"    => "html"
-);
-echo curl($url, $getQuery);
-*/
 
 $path = "https://api.telegram.org/bot$token";
 
@@ -48,15 +36,17 @@ $user_data = [
     'link'  => $update['message']['text'],
 ];
 
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] User data: ' . json_encode($user_data) . PHP_EOL, FILE_APPEND);
-
 $chatId = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
 $message_type = $update["message"]["entities"][0]["type"];
 
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
-    createUser($user_data);
-    file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send rss link to your channel");
+    $user_result = createUser($user_data);
+    if ($user_result) {
+        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send rss link to your channel");
+    } else {
+        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. If you want to change the channel, send me a new link");
+    }
 } elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
     updateUser($user_data);
     file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
@@ -67,7 +57,6 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
 function createUser($user_data)
 {
     global $log_dir;
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Create user' . PHP_EOL, FILE_APPEND);
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
     $dbpass = env('MYSQL_PASSWORD', '');
@@ -80,23 +69,27 @@ function createUser($user_data)
         file_put_contents($log_dir . '/start.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
         die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
-    $columns = implode(", ", array_keys($user_data));
-    file_put_contents($log_dir . '/start.log', 'Columns: ' . $columns . PHP_EOL, FILE_APPEND);
-    $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
-    $values  = implode("', '", $escaped_values);
-    file_put_contents($log_dir . '/start.log', 'Values: ' . $values . PHP_EOL, FILE_APPEND);
-    $sql = "INSERT INTO $table_users ($columns) VALUES ('$values')";
-    file_put_contents($log_dir . '/start.log', 'SQL: ' . $sql . PHP_EOL, FILE_APPEND);
+    // Check if user exists
+    $sql = "SELECT * FROM $table_users WHERE user_id = " . $user_data['user_id'];
     $result = mysqli_query($conn, $sql);
-    if ($result) {
-        $last_id = mysqli_insert_id($conn);
-        file_put_contents($log_dir . '/start.log', "New record created successfully. Last inserted ID is: " . $last_id . PHP_EOL, FILE_APPEND);
+    if (mysqli_num_rows($result) > 0) {
+        file_put_contents($log_dir . '/start.log', 'User already exists' . PHP_EOL, FILE_APPEND);
+        // Close connection
+        mysqli_close($conn);
+        return false;
     } else {
-        file_put_contents($log_dir . '/start.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+        $columns = implode(", ", array_keys($user_data));
+        $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
+        $values  = implode("', '", $escaped_values);
+        $sql = "INSERT INTO $table_users ($columns) VALUES ('$values')";
+        $result = mysqli_query($conn, $sql);
+        if (!$result) {
+            file_put_contents($log_dir . '/start.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+        }
+        // Close connection
+        mysqli_close($conn);
+        return true;
     }
-    // Close connection
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
-    mysqli_close($conn);
 }
 
 
