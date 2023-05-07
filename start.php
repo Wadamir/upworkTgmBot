@@ -7,10 +7,14 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
+file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Start ' . PHP_EOL, FILE_APPEND);
+
 $token = env('TOKEN', null);
 if (!$token) {
+    file_get_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token not found' . PHP_EOL, FILE_APPEND);
     throw new ErrorException('Не указан токен бота');
 } else {
+    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token found: ' . $token . PHP_EOL, FILE_APPEND);
     echo "Токен бота: $token" . PHP_EOL;
 }
 
