@@ -25,12 +25,13 @@ echo curl($url, $getQuery);
 
 $path = "https://api.telegram.org/bot$token";
 
-$update = json_decode(file_get_contents("php://input"), TRUE);
+$get_content = file_get_contents("php://input");
+$update = json_decode($get_content, TRUE);
 if (!$update) {
     exit;
 }
 
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . file_get_contents("php://input") . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
 $chatId = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
