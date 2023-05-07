@@ -54,7 +54,7 @@ $chatId = $update["message"]["chat"]["id"];
 $message = $update["message"]["text"];
 $message_type = $update["message"]["entities"][0]["type"];
 
-if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === null) {
+if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
     createUser($user_data);
     file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send rss link to your channel");
 } elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
