@@ -72,17 +72,20 @@ if (mysqli_query($conn, $sql)) {
 // 3. Create table data
 file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 3. Create table ' . $table_data . PHP_EOL, FILE_APPEND);
 $sql = "CREATE TABLE IF NOT EXISTS $table_data (
-      `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      `category` varchar(255) DEFAULT NULL,
-      `skills` varchar(255) DEFAULT NULL,
-      `country` varchar(255) DEFAULT NULL,
-      `link` varchar(255) DEFAULT NULL,
-      `budget` bigint DEFAULT NULL,
-      `hourly_min` bigint DEFAULT NULL,
-      `hourly_max` bigint DEFAULT NULL,
-      `description` text,
-      `posted_on` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+        `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `chat_id` bigint NOT NULL,
+        `sent_to_user` tinyint DEFAULT NULL,
+        `title` varchar(255) DEFAULT NULL,
+        `link` varchar(255) DEFAULT NULL,
+        `posted_on` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `category` varchar(255) DEFAULT NULL,
+        `skills` varchar(255) DEFAULT NULL,
+        `country` varchar(255) DEFAULT NULL,
+        `budget` bigint DEFAULT NULL,
+        `hourly_min` bigint DEFAULT NULL,
+        `hourly_max` bigint DEFAULT NULL,     
+        `date_updated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
 
 if (!mysqli_select_db($conn, $dbname)) {
