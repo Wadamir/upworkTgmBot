@@ -157,7 +157,8 @@ if (mysqli_num_rows($result) > 0) {
         $message .= "<a href='$link'>Link</a>";
 
         $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
-        file_get_contents($url);
+        $response = file_get_contents($url);
+        file_put_contents($log_dir . '/parser.log', PHP_EOL . ' | Response - ' . $response . PHP_EOL, FILE_APPEND);
 
         // Update sent_to_user
         $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
