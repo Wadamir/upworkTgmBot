@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/parser.log', PHP_EOL . '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
 
 $token = env('TOKEN', null);
 if (!$token) {
@@ -55,6 +55,7 @@ if (mysqli_num_rows($result) > 0) {
             foreach ($xml->channel->item as $item) {
                 // var_dump($item);
                 $title = (string)$item->title;
+                if (strlen($title) > 255) $title = substr($title, 0, 250) . '...';
                 $link = (string)$item->link;
                 $description = (string)$item->description[0];
                 $posted_on = (string)$item->pubDate;
