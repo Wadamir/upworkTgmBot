@@ -151,19 +151,30 @@ if (mysqli_num_rows($result) > 0) {
         $message .= "<b>Category</b>: $category\n";
         $message .= "<b>Skills</b>: $skills\n";
         $message .= "<b>Country</b>: $country\n";
-        $message .= "<b>Budget</b>: $budget\n";
-        $message .= "<b>Hourly Range</b>: $hourly_min - $hourly_max\n";
+        if ($budget > 0) {
+            $message .= "<b>Budget</b>: $budget\n";
+        }
+        if ($hourly_min > 0 && $hourly_max > 0) {
+            $message .= "<b>Hourly Range</b>: $hourly_min - $hourly_max\n";
+        }
+        if ($budget == 0 && $hourly_min == 0 && $hourly_max == 0) {
+            $message .= "<b>Budget</b>: No data!\n";
+        }
         $message .= "<b>Posted on</b>: $posted_on\n";
         $message .= "<a href='$link'>Link</a>";
 
         $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
         $response = file_get_contents($url);
-        file_put_contents($log_dir . '/parser.log', PHP_EOL . ' | Response - ' . $response . PHP_EOL, FILE_APPEND);
-
-        // Update sent_to_user
-        $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
-        if (!mysqli_query($conn, $sql)) {
-            file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
+        $response = json_decode($response, true);
+        if ($response['ok'] === true) {
+            file_put_contents($log_dir . '/parser.log', ' | Response - ok', FILE_APPEND);
+            // Update sent_to_user
+            $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
+            if (!mysqli_query($conn, $sql)) {
+                file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
+            }
+        } else {
+            file_put_contents($log_dir . '/parser.log', ' | Response - error!', FILE_APPEND);
         }
         $counter++;
     }
