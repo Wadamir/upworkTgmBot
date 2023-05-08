@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', PHP_EOL . '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
 
 $token = env('TOKEN', null);
 if (!$token) {
@@ -122,12 +122,7 @@ if (mysqli_num_rows($result) > 0) {
             file_put_contents($log_dir . '/parser.log', ' | Time to update: ' . $date_diff, FILE_APPEND);
         }
     }
-
-    // Close connection
-    // mysqli_close($conn);
 }
-
-// file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send rss link to your channel");
 
 // Send messages to telegram
 $sql = "SELECT * FROM $table_data WHERE sent_to_user = 0 OR sent_to_user IS NULL";
@@ -181,6 +176,5 @@ if (mysqli_num_rows($result) > 0) {
 }
 
 file_put_contents($log_dir . '/parser.log', ' | Total messages sent: ' . $counter . PHP_EOL, FILE_APPEND);
-
 
 mysqli_close($conn);
