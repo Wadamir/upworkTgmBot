@@ -76,6 +76,9 @@ if (mysqli_num_rows($result) > 0) {
                     $skills = explode(',', $skills);
                     $skills = array_map('trim', $skills);
                     $skills = implode(', ', $skills);
+                    if (strlen($skills) > 255) {
+                        $skills = substr($skills, 0, 250) . '...';
+                    }
                 } else {
                     $skills = null;
                 }
