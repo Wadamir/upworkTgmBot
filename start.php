@@ -6,11 +6,11 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Start ' . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
 
 $token = env('TOKEN', null);
 if (!$token) {
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Token not found' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Token not found', FILE_APPEND);
     throw new ErrorException('Не указан токен бота');
 }
 
@@ -22,7 +22,7 @@ if (!$get_content) {
 }
 $update = json_decode($get_content, TRUE);
 
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+// file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
 $user_data = [
     'user_id' => $update['message']['from']['id'],
@@ -66,14 +66,14 @@ function createUser($user_data)
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
-        file_put_contents($log_dir . '/start.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | Connection failed', FILE_APPEND);
         die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
     // Check if user exists
     $sql = "SELECT * FROM $table_users WHERE user_id = " . $user_data['user_id'];
     $result = mysqli_query($conn, $sql);
     if (mysqli_num_rows($result) > 0) {
-        file_put_contents($log_dir . '/start.log', 'User already exists' . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | User already exists', FILE_APPEND);
         // Close connection
         mysqli_close($conn);
         return false;
@@ -84,7 +84,7 @@ function createUser($user_data)
         $sql = "INSERT INTO $table_users ($columns) VALUES ('$values')";
         $result = mysqli_query($conn, $sql);
         if (!$result) {
-            file_put_contents($log_dir . '/start.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+            file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
         }
         // Close connection
         mysqli_close($conn);
@@ -106,7 +106,7 @@ function updateUser($user_data)
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
-        file_put_contents($log_dir . '/start.log', 'Connection failed' . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
         die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
 
@@ -115,11 +115,11 @@ function updateUser($user_data)
 
     if ($result) {
         $last_id = mysqli_insert_id($conn);
-        file_put_contents($log_dir . '/start.log', "New record created successfully. Last inserted ID is: " . $last_id . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', " | New record created successfully. Last inserted ID is: " . $last_id, FILE_APPEND);
     } else {
-        file_put_contents($log_dir . '/start.log', "Error: " . $sql . PHP_EOL . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
     }
     // Close connection
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
     mysqli_close($conn);
 }
