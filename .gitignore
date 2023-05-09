@@ -1,6 +1,5 @@
 *.env
 /vendor/
 /vendor/*
-/logs/
-/logs/*
+/logs/*.log
 *.log
