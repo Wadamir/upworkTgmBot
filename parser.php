@@ -115,6 +115,17 @@ if (mysqli_num_rows($result) > 0) {
                 $result = mysqli_query($conn, $sql);
 
                 if (mysqli_num_rows($result) === 0) {
+                    // Escape strings
+                    $chat_id = mysqli_real_escape_string($conn, $chat_id);
+                    $title = mysqli_real_escape_string($conn, $title);
+                    $link = mysqli_real_escape_string($conn, $link);
+                    $posted_on = mysqli_real_escape_string($conn, $posted_on);
+                    $category = mysqli_real_escape_string($conn, $category);
+                    $skills = mysqli_real_escape_string($conn, $skills);
+                    $country = mysqli_real_escape_string($conn, $country);
+                    $budget = mysqli_real_escape_string($conn, $budget);
+                    $hourly_min = mysqli_real_escape_string($conn, $hourly_min);
+                    $hourly_max = mysqli_real_escape_string($conn, $hourly_max);
                     // Insert data
                     $sql = "INSERT INTO $table_data (chat_id, title, link, posted_on, category, skills, country, budget, hourly_min, hourly_max) VALUES ('$chat_id', '$title', '$link', '$posted_on', '$category', '$skills', '$country', '$budget', '$hourly_min', '$hourly_max')";
                     if (!mysqli_query($conn, $sql)) {
