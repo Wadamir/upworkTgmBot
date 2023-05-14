@@ -159,7 +159,12 @@ function updateRssLinks($chat_id, $rss_link)
     $result = mysqli_query($conn, $sql);
     $rss_links = [];
     foreach ($result as $row) {
-        $rss_links = json_decode($row['rss_links'], true);
+        if (empty($row['rss_links'])) {
+            $rss_links = [];
+        } else {
+            $rss_links = json_decode($row['rss_links'], true);
+        }
+        // $rss_links = json_decode($row['rss_links'], true);
     }
     if (in_array($rss_link, $rss_links)) {
         return false;
