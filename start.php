@@ -91,7 +91,7 @@ function createUser($user_data)
     $rss_links = '';
     if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/start.log', ' | User already exists', FILE_APPEND);
-        $rss_links = mysqli_fetch_assoc($result)['rss_links'];
+        $rss_links = getRssLinksByUser($user_data['user_id']);
         // Close connection
         mysqli_close($conn);
         return $rss_links;
@@ -139,6 +139,40 @@ function updateUser($user_data)
     mysqli_close($conn);
 
     return $updateRssLinksResult;
+}
+
+function getRssLinksByUser($user_id)
+{
+    global $log_dir;
+
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Get RSS Links By User' . PHP_EOL, FILE_APPEND);
+
+    $dbhost = env('MYSQL_HOST', 'localhost');
+    $dbuser = env('MYSQL_USER', 'root');
+    $dbpass = env('MYSQL_PASSWORD', '');
+    $dbname = env('MYSQL_DB', 'telegram_bot');
+    $table_users = env('MYSQL_TABLE_USERS', 'users');
+    $table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'rss_links');
+
+    // Create connection
+    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+    if (!$conn) {
+        file_put_contents($log_dir . '/start.log', ' | Add RSS Link - connection failed', FILE_APPEND);
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $sql = "SELECT * FROM $table_rss_links WHERE user_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    $rss_links = [];
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rss_links[] = $row['rss_link'];
+        }
+    }
+    // Close connection
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
+    mysqli_close($conn);
+
+    return $rss_links;
 }
 
 function addRssLink($user_id, $rss_link)
