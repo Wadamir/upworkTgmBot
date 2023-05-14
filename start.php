@@ -51,8 +51,12 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
         } else {
             // Send message
+            $total_links = count($user_result);
+            foreach ($user_result as $key => $value) {
+                $user_result[$key] = $key + 1 . '. ' . $value;
+            }
             $existing_links = implode("\n", $user_result);
-            $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
+            $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered. You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
             file_put_contents($log_dir . '/start.log', ' | Existing links - ' . $existing_links . PHP_EOL, FILE_APPEND);
             //file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.");
