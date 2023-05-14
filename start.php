@@ -22,7 +22,7 @@ if (!$get_content) {
 }
 $update = json_decode($get_content, TRUE);
 
-// file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
 $user_data = [
     'user_id' => $update['message']['from']['id'],
