@@ -129,9 +129,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
                     [
-                        ['text' => 'link', 'callback_data' => '/removeidrss'],
-                        ['text' => 'link', 'callback_data' => '/removeidrss'],
-                        ['text' => 'link', 'callback_data' => '/removeidrss']
+                        implode(', ', $buttons)
                     ]
                 ]
             );
