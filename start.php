@@ -129,11 +129,12 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
                     [
-                        ['text' => 'link', 'url' => 'https://core.telegram.org']
+                        ['text' => 'link', 'callback_data' => '/removeidrss'],
+                        ['text' => 'link', 'callback_data' => '/removeidrss'],
+                        ['text' => 'link', 'callback_data' => '/removeidrss']
                     ]
                 ]
             );
-            $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
             // Send message with reply keyboard
             // $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(array($buttons), true); // true for one-time keyboard
