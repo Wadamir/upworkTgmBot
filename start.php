@@ -33,7 +33,7 @@ $user_data = [
     'language_code' => $update['message']['from']['language_code'],
     'is_premium' => (isset($update['message']['from']['is_premium']) && $update['message']['from']['is_premium'] !== 'false' && $update['message']['from']['is_premium'] !== false) ? 1 : 0,
     'chat_id' => $update['message']['chat']['id'],
-    'link'  => $update['message']['text'],
+    'text'  => $update['message']['text'],
 ];
 
 $chatId = $update["message"]["chat"]["id"];
@@ -44,7 +44,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
     try {
         $user_result = createUser($user_data);
         if ($user_result) {
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link");
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
         } else {
             $user_result = json_decode($user_result, true);
             $existing_links = implode("/n", $user_result);
@@ -124,7 +124,7 @@ function updateUser($user_data)
         file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
-    $updateRssLinksResult  = updateRssLinks($user_data['chat_id'], $user_data['link']);
+    $updateRssLinksResult  = updateRssLinks($user_data['chat_id'], $user_data['text']);
 
     // Close connection
     file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
@@ -161,7 +161,7 @@ function updateRssLinks($chat_id, $rss_link)
         $rss_links[] = $rss_link;
     }
 
-    $sql = "UPDATE $table_users SET link = '" . json_encode($rss_links) . "' WHERE chat_id = " . $chat_id;
+    $sql = "UPDATE $table_users SET rss_links = '" . json_encode($rss_links) . "' WHERE chat_id = " . $chat_id;
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
