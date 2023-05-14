@@ -4,8 +4,9 @@ Create database for tgm bot
 *******************************************
 1. Create database
 2. Create table users
-3. Create table data
-4. Close connection
+3. Create table rss links
+4. Create table data
+5. Close connection
 */
 
 ini_set('display_errors', 1);
@@ -23,6 +24,7 @@ $dbuser = env('MYSQL_USER', 'root');
 $dbpass = env('MYSQL_PASSWORD', '');
 $dbname = env('MYSQL_DB', 'telegram_bot');
 $table_users = env('MYSQL_TABLE_USERS', 'users');
+$table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'rss_links');
 $table_data = env('MYSQL_TABLE_DATA', 'data');
 
 // Create connection
@@ -53,7 +55,6 @@ $sql = "CREATE TABLE IF NOT EXISTS $table_users (
         `username` varchar(256) DEFAULT NULL,
         `language_code` varchar(16) DEFAULT NULL,
         `chat_id` varchar(256) DEFAULT NULL,
-        `rss_links` varchar(256) DEFAULT NULL,
         `refresh_time` bigint DEFAULT NULL,
         `date_updated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -70,8 +71,30 @@ if (mysqli_query($conn, $sql)) {
     file_put_contents($log_dir . '/install.log', "Error creating table $table_users: " . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
 }
 
-// 3. Create table data
-file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 3. Create table ' . $table_data . PHP_EOL, FILE_APPEND);
+// 3. Create table rss links
+file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 3. Create table ' . $table_rss_links . PHP_EOL, FILE_APPEND);
+$sql = "CREATE TABLE IF NOT EXISTS $table_rss_links (
+        `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `user_id` varchar(256) DEFAULT NULL,
+        `rss_link` varchar(255) DEFAULT NULL,
+        `rss_name` varchar(255) DEFAULT NULL,
+        `date_updated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        `date_added` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;";
+
+if (!mysqli_select_db($conn, $dbname)) {
+    file_put_contents($log_dir . '/install.log', 'Database NOT SELECTED' . PHP_EOL, FILE_APPEND);
+    die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+}
+
+if (mysqli_query($conn, $sql)) {
+    file_put_contents($log_dir . '/install.log', "Table $table_rss_links created successfully" . PHP_EOL, FILE_APPEND);
+} else {
+    file_put_contents($log_dir . '/install.log', "Error creating table $table_rss_links: " . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+}
+
+// 4. Create table data
+file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 4. Create table ' . $table_data . PHP_EOL, FILE_APPEND);
 $sql = "CREATE TABLE IF NOT EXISTS $table_data (
         `id` bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
         `chat_id` bigint NOT NULL,
@@ -100,6 +123,6 @@ if (mysqli_query($conn, $sql)) {
     file_put_contents($log_dir . '/install.log', "Error creating table $table_data: " . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
 }
 
-// 4. Close connection
-file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 4. Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
+// 5. Close connection
+file_put_contents($log_dir . '/install.log', '[' . date('Y-m-d H:i:s') . '] 5. Close connection' . PHP_EOL . PHP_EOL, FILE_APPEND);
 mysqli_close($conn);

@@ -56,8 +56,12 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
     }
 } elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
     try {
-        updateUser($user_data);
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
+        $add_rss_link_response = addRssLink($user_data['user_id'], $user_data['text']);
+        if ($add_rss_link_response) {
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
+        } else {
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, this RSS link is already exists");
+        }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
         file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
@@ -128,7 +132,7 @@ function updateUser($user_data)
         file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
-    $updateRssLinksResult  = updateRssLinks($user_data['chat_id'], $user_data['text']);
+    $updateRssLinksResult  = addRssLink($user_data['user_id'], $user_data['text']);
 
     // Close connection
     file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
@@ -137,7 +141,7 @@ function updateUser($user_data)
     return $updateRssLinksResult;
 }
 
-function updateRssLinks($chat_id, $rss_link)
+function addRssLink($user_id, $rss_link)
 {
     global $log_dir;
 
@@ -148,40 +152,29 @@ function updateRssLinks($chat_id, $rss_link)
     $dbpass = env('MYSQL_PASSWORD', '');
     $dbname = env('MYSQL_DB', 'telegram_bot');
     $table_users = env('MYSQL_TABLE_USERS', 'users');
-    $table_data = env('MYSQL_TABLE_DATA', 'data');
+    $table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'data');
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
         file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
-    $sql = "SELECT * FROM $table_users WHERE chat_id = " . $chat_id;
+    $sql = "SELECT * FROM $table_rss_links WHERE rss_link = " . $rss_link;
     $result = mysqli_query($conn, $sql);
-    $rss_links = [];
-    foreach ($result as $row) {
-        if (empty($row['rss_links'])) {
-            $rss_links = [];
-        } else {
-            $rss_links = json_decode($row['rss_links'], true);
-        }
-        // $rss_links = json_decode($row['rss_links'], true);
-    }
-    if (in_array($rss_link, $rss_links)) {
+    if (mysqli_num_rows($result) > 0) {
+        file_put_contents($log_dir . '/start.log', ' | Rss link already exists', FILE_APPEND);
+        mysqli_close($conn);
         return false;
     } else {
-        $rss_links[] = $rss_link;
+        $sql = "INSERT INTO $table_rss_links (user_id,rss_link) VALUES ('$user_id','$rss_link')";
+        $result = mysqli_query($conn, $sql);
+        if (!$result) {
+            file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+            throw new ErrorException("Error: " . $sql . ' | ' . mysqli_error($conn));
+        }
     }
 
-    $sql = "UPDATE $table_users SET rss_links = '" . json_encode($rss_links) . "' WHERE chat_id = " . $chat_id;
-    $result = mysqli_query($conn, $sql);
-
-    if ($result) {
-        $last_id = mysqli_insert_id($conn);
-        file_put_contents($log_dir . '/start.log', " | Rss links updated successfully. Last inserted ID is: " . $last_id, FILE_APPEND);
-    } else {
-        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
-        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
-    }
-
+    // Close connection
+    mysqli_close($conn);
     return true;
 }
