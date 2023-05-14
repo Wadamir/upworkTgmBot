@@ -42,32 +42,55 @@ $message_type = $update["message"]["entities"][0]["type"];
 
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
     try {
+        $bot = new \TelegramBot\Api\BotApi($token);
         $user_result = createUser($user_data);
         if ($user_result === true) {
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
+            // Send message
+            $messageText = "Hello, " . $user_data['first_name'] . "!" . " Send here your RSS link to get updates from it.";
+            $messageResponse = $bot->sendMessage($chatId, $messageText);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
         } else {
+            // Send message
             $existing_links = implode("\n", $user_result);
+            $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
+            $messageResponse = $bot->sendMessage($chatId, $messageText);
             file_put_contents($log_dir . '/start.log', ' | Existing links - ' . $existing_links . PHP_EOL, FILE_APPEND);
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.");
+            //file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.");
         }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
     }
 } elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
     try {
+        $bot = new \TelegramBot\Api\BotApi($token);
         $add_rss_link_response = addRssLink($user_data['user_id'], $user_data['text']);
         if ($add_rss_link_response) {
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
+            // Send message
+            $existing_links = implode("\n", $user_result);
+            $messageText = "Ok, " . $user_data['first_name'] . "! I will send you updates from this channel.";
+            $messageResponse = $bot->sendMessage($chatId, $messageText);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
         } else {
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, this RSS link is already exists");
+            // Send message
+            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS link is already added.";
+            $messageResponse = $bot->sendMessage($chatId, $messageText);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, this RSS link is already exists");
         }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
     }
 } else {
-    file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Try again, please");
+    try {
+        // Send message
+        $bot = new \TelegramBot\Api\BotApi($token);
+        $messageResponse = $bot->sendMessage($chatId, "Try again, please");
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Try again, please");
+    } catch (Exception $e) {
+        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+    }
 }
 
 function createUser($user_data)
