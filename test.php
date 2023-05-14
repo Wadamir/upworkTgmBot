@@ -39,11 +39,13 @@ if (mysqli_num_rows($result) > 0) {
     foreach ($rows as $row) {
         $link = $row['link'];
         $chatId = $row['chat_id'];
-        // $chatId = intval('443r34r34rf');
+        $chatId = intval('443r34r34rf');
         $refresh_time = $row['refresh_time'] * 60;
         if ($refresh_time == 0) {
             $refresh_time = 300;
         }
+
+        $message = "Link: $link\nChat ID: $chatId\nRefresh time: $refresh_time";
 
         $url = $path . "/sendmessage?chat_id=" . $chatId . "&text=" . urlencode($message) . "&parse_mode=HTML";
         $response = file_get_contents($url);
