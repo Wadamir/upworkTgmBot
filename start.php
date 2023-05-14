@@ -131,9 +131,9 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
-                    [
-                        (object)$buttons
-                    ]
+
+                    (object)$buttons
+
                 ]
             );
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
