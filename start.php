@@ -85,6 +85,61 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
         // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
     }
+} elseif (strpos($message, "/help") === 0 && $message === '/help') {
+    try {
+        // Send message
+        $bot = new \TelegramBot\Api\BotApi($token);
+        $messageText = "You can get help here - https://wadamir.ru/upwork-tgm-bot/";
+        $messageResponse = $bot->sendMessage($chatId, $messageText);
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send here your RSS link to get updates from it");
+    } catch (Exception $e) {
+        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+    }
+} elseif (strpos($message, "/addrss") === 0 && $message === '/addrss') {
+    try {
+        // Send message
+        $bot = new \TelegramBot\Api\BotApi($token);
+        $messageText = "Send here your RSS link to get updates from it";
+        $messageResponse = $bot->sendMessage($chatId, $messageText);
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send here your RSS link to get updates from it");
+    } catch (Exception $e) {
+        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+    }
+} elseif (strpos($message, "/removerss") === 0 && $message === '/removerss') {
+    $existing_links = getRssLinksByUser($user_data['user_id']);
+    if (count($existing_links) > 0) {
+        try {
+            // Send message
+            $bot = new \TelegramBot\Api\BotApi($token);
+            $buttons = array();
+            foreach ($user_result as $key => $value) {
+                $user_result[$key] = $key + 1 . '. ' . $value;
+                $buttons[] = $key + 1 . '. ' . $value;
+            }
+            $existing_links = implode("\n", $user_result);
+            $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to remove your RSS link press the button.";
+            // Send message with reply keyboard
+            $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(array($buttons), true); // true for one-time keyboard
+            $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send here your RSS link to remove it");
+        } catch (Exception $e) {
+            file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+        }
+    } else {
+        try {
+            // Send message
+            $bot = new \TelegramBot\Api\BotApi($token);
+            $messageText = "You don't have any RSS links. Send here your RSS link to get updates from it";
+            $messageResponse = $bot->sendMessage($chatId, $messageText);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=You don't have any RSS links. Send here your RSS link to get updates from it");
+        } catch (Exception $e) {
+            file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+        }
+    }
 } else {
     try {
         // Send message
