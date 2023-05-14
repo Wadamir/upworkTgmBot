@@ -46,8 +46,8 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
         if ($user_result === true) {
             file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
         } else {
-            $existing_links = implode("/n", $user_result);
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:/n" . $existing_links . "/nIf you want to add or remove your RSS links use menu.");
+            $existing_links = implode("\n", $user_result);
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "/nIf you want to add or remove your RSS links use menu.");
         }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
