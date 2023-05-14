@@ -113,12 +113,13 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
         try {
             // Send message
             $bot = new \TelegramBot\Api\BotApi($token);
+            $rss_links = array();
             $buttons = array();
-            foreach ($user_result as $key => $value) {
-                $user_result[$key] = $key + 1 . '. ' . $value;
+            foreach ($existing_links as $key => $value) {
+                $rss_links[] = $key + 1 . '. ' . $value;
                 $buttons[] = $key + 1 . '. ' . $value;
             }
-            $existing_links = implode("\n", $user_result);
+            $existing_links = implode("\n", $rss_links);
             $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to remove your RSS link press the button.";
             // Send message with reply keyboard
             $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(array(array("one", "two", "three")), true); // true for one-time keyboard
