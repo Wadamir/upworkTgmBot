@@ -14,6 +14,8 @@ if (!$token) {
     throw new ErrorException('Не указан токен бота');
 }
 
+$bot = new \TelegramBot\Api\BotApi($token);
+
 $path = "https://api.telegram.org/bot$token";
 
 $dbhost = env('MYSQL_HOST', 'localhost');
