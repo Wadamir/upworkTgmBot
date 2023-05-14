@@ -145,21 +145,21 @@ function addRssLink($user_id, $rss_link)
 {
     global $log_dir;
 
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Update RSS Links' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Add RSS Link' . PHP_EOL, FILE_APPEND);
 
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
     $dbpass = env('MYSQL_PASSWORD', '');
     $dbname = env('MYSQL_DB', 'telegram_bot');
     $table_users = env('MYSQL_TABLE_USERS', 'users');
-    $table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'data');
+    $table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'rss_links');
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
-        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | Add RSS Link - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
-    $sql = "SELECT * FROM $table_rss_links WHERE rss_link = " . $rss_link;
+    $sql = "SELECT * FROM $table_rss_links WHERE rss_link = '" . $rss_link . "'";
     $result = mysqli_query($conn, $sql);
     if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/start.log', ' | Rss link already exists', FILE_APPEND);
