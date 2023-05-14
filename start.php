@@ -141,6 +141,8 @@ function updateRssLinks($chat_id, $rss_link)
 {
     global $log_dir;
 
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Update RSS Links' . PHP_EOL, FILE_APPEND);
+
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
     $dbpass = env('MYSQL_PASSWORD', '');
