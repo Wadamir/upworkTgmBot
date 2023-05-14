@@ -43,12 +43,11 @@ $message_type = $update["message"]["entities"][0]["type"];
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
     try {
         $user_result = createUser($user_data);
-        if ($user_result) {
+        if ($user_result === true) {
             file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
         } else {
-            $user_result = json_decode($user_result, true);
             $existing_links = implode("/n", $user_result);
-            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS link:/n" . $existing_links . "/nIf you want to add or remove your RSS links use menu.");
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:/n" . $existing_links . "/nIf you want to add or remove your RSS links use menu.");
         }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
@@ -135,7 +134,7 @@ function updateUser($user_data)
     $updateRssLinksResult  = addRssLink($user_data['user_id'], $user_data['text']);
 
     // Close connection
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Close connection' . PHP_EOL, FILE_APPEND);
     mysqli_close($conn);
 
     return $updateRssLinksResult;
@@ -168,8 +167,9 @@ function getRssLinksByUser($user_id)
             $rss_links[] = $row['rss_link'];
         }
     }
+    file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links), FILE_APPEND);
     // Close connection
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Close connection' . PHP_EOL, FILE_APPEND);
     mysqli_close($conn);
 
     return $rss_links;
