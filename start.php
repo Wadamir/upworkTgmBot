@@ -116,7 +116,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $rss_links = array();
             $buttons = array();
             foreach ($existing_links as $key => $value) {
-                $buttons[] = [
+                $buttons = [
                     'text' => $key + 1,
                     'callback_data' => $value
                 ];
@@ -129,7 +129,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
                     [
-                        implode(', ', $buttons)
+                        $buttons
                     ]
                 ]
             );

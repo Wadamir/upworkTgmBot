@@ -16,6 +16,37 @@ if (!$token) {
 
 // $path = "https://api.telegram.org/bot$token";
 
+$existing_links = [
+    'https://www.vedomosti.ru/rss/news' => 'https://www.vedomosti.ru/rss/news',
+    'https://www.vedomosti.ru/rss/issue' => 'https://www.vedomosti.ru/rss/issue',
+    'https://www.vedomosti.ru/rss/finance' => 'https://www.vedomosti.ru/rss/finance',
+    'https://www.vedomosti.ru/rss/realty' => 'https://www.vedomosti.ru/rss/realty',
+    'https://www.vedomosti.ru/rss/technology' => 'https://www.vedomosti.ru/rss/technology',
+    'https://www.vedomosti.ru/rss/business' => 'https://www.vedomosti.ru/rss/business',
+    'https://www.vedomosti.ru/rss/companies' => 'https://www.vedomosti.ru/rss/companies',
+    'https://www.vedomosti.ru/rss/marketing' => 'https://www.vedomosti.ru/rss/marketing',
+    'https://www.vedomosti.ru/rss/management' => 'https://www.vedomosti.ru/rss/management',
+    'https://www.vedomosti.ru/rss/innovation' => 'https://www.vedomosti.ru/rss/innovation',
+    'https://www.vedomosti.ru/rss/entrepreneur' => 'https://www.vedomosti.ru/rss/entrepreneur',
+    'https://www.vedomosti.ru/rss/retail' => 'https://www.vedomosti.ru/rss/retail',
+    'https://www.vedomosti.ru/rss/energy' => 'https://www.vedomosti.ru/rss/energy',
+    'https://www.vedomosti.ru/rss/transport' => 'https://www.vedomosti.ru/rss/transport',
+    'https://www.vedomosti.ru/rss/telecom' => 'https://www.vedomosti.ru/rss/telecom',
+    'https://www.vedomosti.ru/rss/industries' => 'https://www.vedomosti.ru/rss/industries',
+    'https://www.vedomosti.ru/rss/insurance' => 'https://www.vedomosti.ru/rss/insurance'
+];
+$rss_links = array();
+$buttons = array();
+foreach ($existing_links as $key => $value) {
+    $buttons = ['text' => $key + 1, 'callback_data' => $value];
+    $rss_links[] = $key + 1 . '. ' . $value;
+}
+// var_dump(implode(',', $buttons));
+// var_dump($existing_links);
+// var_dump($rss_links);
+var_dump($buttons);
+
+
 $dbhost = env('MYSQL_HOST', 'localhost');
 $dbuser = env('MYSQL_USER', 'root');
 $dbpass = env('MYSQL_PASSWORD', '');
