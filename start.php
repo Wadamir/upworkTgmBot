@@ -93,9 +93,9 @@ function createUser($user_data)
         return $rss_links;
     } else {
         // Insert user
-        $rss_links = json_encode($user_data['text']);
+        // $rss_links = json_encode($user_data['text']);
+        // $user_data['rss_links'] = $rss_links;
         unset($user_data['text']);
-        $user_data['rss_links'] = $rss_links;
         $columns = implode(", ", array_keys($user_data));
         $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
         $values  = implode("', '", $escaped_values);
