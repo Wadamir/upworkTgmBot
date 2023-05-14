@@ -41,15 +41,27 @@ $message = $update["message"]["text"];
 $message_type = $update["message"]["entities"][0]["type"];
 
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
-    $user_result = createUser($user_data);
-    if ($user_result) {
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send rss link to your channel");
-    } else {
-        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. If you want to change the channel, send me a new link");
+    try {
+        $user_result = createUser($user_data);
+        if ($user_result) {
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link");
+        } else {
+            $user_result = json_decode($user_result, true);
+            $existing_links = implode("/n", $user_result);
+            file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS link:/n" . $existing_links . "/nIf you want to add or remove your RSS links use menu.");
+        }
+    } catch (Exception $e) {
+        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
     }
 } elseif (strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
-    updateUser($user_data);
-    file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
+    try {
+        updateUser($user_data);
+        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Ok! I will send you updates from this channel");
+    } catch (Exception $e) {
+        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
+    }
 } else {
     file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Try again, please");
 }
@@ -67,16 +79,18 @@ function createUser($user_data)
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
         file_put_contents($log_dir . '/start.log', ' | Connection failed', FILE_APPEND);
-        die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+        throw new ErrorException("Connection failed: " . mysqli_connect_error());
     }
     // Check if user exists
     $sql = "SELECT * FROM $table_users WHERE user_id = " . $user_data['user_id'];
     $result = mysqli_query($conn, $sql);
+    $rss_links = '';
     if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/start.log', ' | User already exists', FILE_APPEND);
+        $rss_links = mysqli_fetch_assoc($result)['rss_links'];
         // Close connection
         mysqli_close($conn);
-        return false;
+        return $rss_links;
     } else {
         $columns = implode(", ", array_keys($user_data));
         $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
@@ -85,6 +99,7 @@ function createUser($user_data)
         $result = mysqli_query($conn, $sql);
         if (!$result) {
             file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+            throw new ErrorException("Error: " . $sql . ' | ' . mysqli_error($conn));
         }
         // Close connection
         mysqli_close($conn);
@@ -107,19 +122,55 @@ function updateUser($user_data)
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
         file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
-        die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $updateRssLinksResult  = updateRssLinks($user_data['chat_id'], $user_data['link']);
+
+    // Close connection
+    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
+    mysqli_close($conn);
+
+    return $updateRssLinksResult;
+}
+
+function updateRssLinks($chat_id, $rss_link)
+{
+    global $log_dir;
+
+    $dbhost = env('MYSQL_HOST', 'localhost');
+    $dbuser = env('MYSQL_USER', 'root');
+    $dbpass = env('MYSQL_PASSWORD', '');
+    $dbname = env('MYSQL_DB', 'telegram_bot');
+    $table_users = env('MYSQL_TABLE_USERS', 'users');
+    $table_data = env('MYSQL_TABLE_DATA', 'data');
+    // Create connection
+    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+    if (!$conn) {
+        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $sql = "SELECT * FROM $table_users WHERE chat_id = " . $chat_id;
+    $result = mysqli_query($conn, $sql);
+    $rss_links = [];
+    foreach ($result as $row) {
+        $rss_links = json_decode($row['rss_links'], true);
+    }
+    if (in_array($rss_link, $rss_links)) {
+        return false;
+    } else {
+        $rss_links[] = $rss_link;
     }
 
-    $sql = "UPDATE $table_users SET link = '" . $user_data['link'] . "' WHERE chat_id = " . $user_data['chat_id'];
+    $sql = "UPDATE $table_users SET link = '" . json_encode($rss_links) . "' WHERE chat_id = " . $chat_id;
     $result = mysqli_query($conn, $sql);
 
     if ($result) {
         $last_id = mysqli_insert_id($conn);
-        file_put_contents($log_dir . '/start.log', " | New record created successfully. Last inserted ID is: " . $last_id, FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', " | Rss links updated successfully. Last inserted ID is: " . $last_id, FILE_APPEND);
     } else {
         file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
     }
-    // Close connection
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Close connection' . PHP_EOL, FILE_APPEND);
-    mysqli_close($conn);
+
+    return true;
 }
