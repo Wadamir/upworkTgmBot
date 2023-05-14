@@ -116,12 +116,11 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $rss_links = array();
             $buttons = array();
             foreach ($existing_links as $key => $value) {
-                $buttons[] = [
+                $buttons[] =
                     [
                         'text' => $key + 1,
                         'callback_data' => $value
-                    ]
-                ];
+                    ];
                 $rss_links[] = $key + 1 . '. ' . $value;
             }
             $existing_links = implode("\n", $rss_links);
