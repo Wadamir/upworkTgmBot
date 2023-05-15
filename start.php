@@ -44,24 +44,42 @@ if (!$get_content) {
     exit;
 }
 $update = json_decode($get_content, TRUE);
-
 file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
-$user_data = [
-    'user_id' => $update['message']['from']['id'],
-    'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false' && $update['message']['from']['is_bot'] !== false) ? 1 : 0,
-    'first_name' => (isset($update['message']['from']['first_name']) && $update['message']['from']['first_name'] !== '') ? $update['message']['from']['first_name'] : null,
-    'last_name' => (isset($update['message']['from']['last_name']) && $update['message']['from']['last_name'] !== '') ? $update['message']['from']['last_name'] : null,
-    'username' => $update['message']['from']['username'],
-    'language_code' => $update['message']['from']['language_code'],
-    'is_premium' => (isset($update['message']['from']['is_premium']) && $update['message']['from']['is_premium'] !== 'false' && $update['message']['from']['is_premium'] !== false) ? 1 : 0,
-    'chat_id' => $update['message']['chat']['id'],
-    'text'  => $update['message']['text'],
-];
+if (isset($update['message'])) {
 
-$chatId = $update["message"]["chat"]["id"];
-$message = $update["message"]["text"];
-$message_type = $update["message"]["entities"][0]["type"];
+    $user_data = [
+        'user_id' => $update['message']['from']['id'],
+        'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false' && $update['message']['from']['is_bot'] !== false) ? 1 : 0,
+        'first_name' => (isset($update['message']['from']['first_name']) && $update['message']['from']['first_name'] !== '') ? $update['message']['from']['first_name'] : null,
+        'last_name' => (isset($update['message']['from']['last_name']) && $update['message']['from']['last_name'] !== '') ? $update['message']['from']['last_name'] : null,
+        'username' => $update['message']['from']['username'],
+        'language_code' => $update['message']['from']['language_code'],
+        'is_premium' => (isset($update['message']['from']['is_premium']) && $update['message']['from']['is_premium'] !== 'false' && $update['message']['from']['is_premium'] !== false) ? 1 : 0,
+        'chat_id' => $update['message']['chat']['id'],
+        'text'  => $update['message']['text'],
+    ];
+
+    $chatId = $update["message"]["chat"]["id"];
+    $message = $update["message"]["text"];
+    $message_type = $update["message"]["entities"][0]["type"];
+} elseif (isset($update['callback_query'])) {
+    $user_data = [
+        'user_id' => $update['callback_query']['from']['id'],
+        'is_bot' => (isset($update['callback_query']['from']['is_bot']) && $update['messacallback_querye']['from']['is_bot'] !== 'false' && $update['callback_query']['from']['is_bot'] !== false) ? 1 : 0,
+        'first_name' => (isset($update['callback_query']['from']['first_name']) && $update['callback_query']['from']['first_name'] !== '') ? $update['callback_query']['from']['first_name'] : null,
+        'last_name' => (isset($update['callback_query']['from']['last_name']) && $update['callback_query']['from']['last_name'] !== '') ? $update['callback_query']['from']['last_name'] : null,
+        'username' => $update['callback_query']['from']['username'],
+        'language_code' => $update['callback_query']['from']['language_code'],
+        'is_premium' => (isset($update['callback_query']['from']['is_premium']) && $update['callback_query']['from']['is_premium'] !== 'false' && $update['callback_query']['from']['is_premium'] !== false) ? 1 : 0,
+        'chat_id' => $update['callback_query']['message']['chat']['id'],
+        'text'  => $update['callback_query']['message']['text'],
+    ];
+
+    $chatId = $update['callback_query']["message"]["chat"]["id"];
+    $message = $update['callback_query']["message"]["text"];
+    $message_type = $update['callback_query']["message"]["entities"][0]["type"];
+}
 
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
     try {
