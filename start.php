@@ -157,37 +157,22 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // Send message
             $bot = new \TelegramBot\Api\BotApi($token);
             $rss_links = array();
-            foreach ($existing_links as $key => $value) {
-                $rss_links[] = $key + 1 . '. ' . $value;
-            }
-            $existing_links_string = implode("\n", $rss_links);
-            // Print buttons array to file
-            // file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
-            $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links_string . "\nIf you want to remove your RSS link press the button.";
-
-
             $buttons = array();
             foreach ($existing_links as $key => $value) {
-                $buttons[] = ['text' => $key + 1, 'callback_data' => $value];
-                $rss_links[] = $key + 1 . '. ' . $value;
+                $rss_links[] = $key + 1 . '. ' . $value['rss_link'];
+                $callback = 'removerss_' . $value['id'];
+                $buttons[] = ['text' => ($key + 1), 'callback_data' => $callback];
             }
+            $existing_links_string = implode("\n", $rss_links);
+            $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links_string . "\nIf you want to remove your RSS link press the button.";
 
-            $fu = array();
-            foreach ($existing_links as $key => $value) {
-                $callback = 'removerss_' . $key;
-                $fu[] = ['text' => ($key + 1), 'callback_data' => $callback];
-            }
             // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
-                    $fu
+                    $buttons
                 ]
             );
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
-            // Send message with reply keyboard
-            // $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(array($buttons), true); // true for one-time keyboard
-            // $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
-            // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Send here your RSS link to remove it");
         } catch (Exception $e) {
             file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
             // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Sorry, something went wrong. Try again later");
@@ -311,7 +296,11 @@ function getRssLinksByUser($user_id)
     $rss_links = [];
     if (mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
-            $rss_links[] = $row['rss_link'];
+            $rss_links[] = [
+                'id'    => $row['id'],
+                'link'  => $row['rss_link'],
+                'name'  => $row['rss_name'],
+            ];
         }
     }
     file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links), FILE_APPEND);
