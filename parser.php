@@ -21,6 +21,7 @@ $dbuser = env('MYSQL_USER', 'root');
 $dbpass = env('MYSQL_PASSWORD', '');
 $dbname = env('MYSQL_DB', 'telegram_bot');
 $table_users = env('MYSQL_TABLE_USERS', 'users');
+$table_rss_links = env('MYSQL_TABLE_RSS_LINKS', 'rss_links');
 $table_data = env('MYSQL_TABLE_DATA', 'data');
 // Create connection
 $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
@@ -29,7 +30,7 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
-$sql = "SELECT * FROM $table_users WHERE link IS NOT NULL";
+$sql = "SELECT trl.rss_link FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
     try {
@@ -38,7 +39,7 @@ if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/parser.log', ' | Links exists! ', FILE_APPEND);
         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
         foreach ($rows as $row) {
-            $link = $row['link'];
+            $link = $row['rss_link'];
             $chat_id = $row['chat_id'];
             $refresh_time = $row['refresh_time'] * 60;
             if ($refresh_time == 0) {
@@ -179,19 +180,27 @@ if (mysqli_num_rows($result) > 0) {
         $message .= "<b>Posted on</b>: $posted_on\n";
         $message .= "<a href='$link'>Link</a>";
 
-        $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
-        $response = file_get_contents($url);
-        $response = json_decode($response, true);
-        if ($response['ok'] === true) {
-            file_put_contents($log_dir . '/parser.log', ' | Response - ok', FILE_APPEND);
+        try {
+            $bot = new \TelegramBot\Api\BotApi($token);
+            $bot->sendMessage($chat_id, $message, 'HTML');
             // Update sent_to_user
             $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
             if (!mysqli_query($conn, $sql)) {
                 file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
             }
+        } catch (\TelegramBot\Api\Exception $e) {
+            file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+        }
+        /*
+        $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
+        $response = file_get_contents($url);
+        $response = json_decode($response, true);
+        if ($response['ok'] === true) {
+            file_put_contents($log_dir . '/parser.log', ' | Response - ok', FILE_APPEND);
         } else {
             file_put_contents($log_dir . '/parser.log', ' | Response - error!', FILE_APPEND);
         }
+        */
         $counter++;
     }
 }
