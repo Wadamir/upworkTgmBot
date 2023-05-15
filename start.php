@@ -131,7 +131,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
 
             $fu = array();
             foreach ($existing_links as $key => $value) {
-                $callback = 'removerss_' . $value;
+                $callback = 'removerss_' . $key;
                 $fu[] = ['text' => ($key + 1), 'callback_data' => $callback];
             }
             // Send message with inline keyboard
