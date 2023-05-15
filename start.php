@@ -297,9 +297,9 @@ function getRssLinksByUser($user_id)
     if (mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_assoc($result)) {
             $rss_links[] = [
-                'id'    => $row['id'],
-                'link'  => $row['rss_link'],
-                'name'  => $row['rss_name'],
+                'id'        => $row['id'],
+                'rss_link'  => $row['rss_link'],
+                'rss_name'  => $row['rss_name'],
             ];
         }
     }
