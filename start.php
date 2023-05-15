@@ -25,6 +25,7 @@ file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Receiv
 
 $command_data = '';
 if (isset($update['message'])) {
+    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Message: ' . $update['message']['text'] . PHP_EOL, FILE_APPEND);
     $user_data = [
         'user_id' => $update['message']['from']['id'],
         'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false' && $update['message']['from']['is_bot'] !== false) ? 1 : 0,
@@ -42,6 +43,7 @@ if (isset($update['message'])) {
     $message = $update["message"]["text"];
     $message_type = $update["message"]["entities"][0]["type"];
 } elseif (isset($update['callback_query'])) {
+    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Callback: ' . $update['callback_query']['data'] . PHP_EOL, FILE_APPEND);
     $user_data = [
         'user_id' => $update['callback_query']['from']['id'],
         'is_bot' => (isset($update['callback_query']['from']['is_bot']) && $update['messacallback_querye']['from']['is_bot'] !== 'false' && $update['callback_query']['from']['is_bot'] !== false) ? 1 : 0,
