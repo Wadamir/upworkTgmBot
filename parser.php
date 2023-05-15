@@ -30,7 +30,7 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
-$sql = "SELECT trl.rss_link FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL";
+$sql = "SELECT * FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
     try {
