@@ -21,7 +21,8 @@ if (!$get_content) {
     exit;
 }
 $update = json_decode($get_content, TRUE);
-// file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+
 $command_data = '';
 if (isset($update['message'])) {
     $user_data = [
@@ -60,7 +61,7 @@ if (isset($update['message'])) {
     $command_data = $update['callback_query']['data'];
 }
 // print_r user_data to file
-file_put_contents($log_dir . '/start.log', print_r($user_data, true), FILE_APPEND);
+// file_put_contents($log_dir . '/start.log', print_r($user_data, true), FILE_APPEND);
 
 if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 'bot_command') {
     switch ($message) {
