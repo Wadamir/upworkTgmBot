@@ -10,41 +10,21 @@ file_put_contents($log_dir . '/start.log', PHP_EOL . '[' . date('Y-m-d H:i:s') .
 
 $token = env('TOKEN', null);
 if (!$token) {
-    file_put_contents($log_dir . '/start.log', ' | Token not found', FILE_APPEND);
-    throw new ErrorException('Не указан токен бота');
+    file_put_contents($log_dir . '/start.log', ' | Token not found' . PHP_EOL, FILE_APPEND);
+    die('Token not found');
 }
-/*
+
+// Todo move to api
 $get_content = file_get_contents("php://input");
 if (!$get_content) {
     exit;
 }
 $update = json_decode($get_content, TRUE);
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
-*/
-
-try {
-    $bot = new \TelegramBot\Api\Client($token);
-
-    //Handle text messages
-    $bot->on(function (\TelegramBot\Api\Types\Update $update) use ($bot) {
-        $message = $update->getMessage();
-        $id = $message->getChat()->getId();
-        $bot->sendMessage($id, 'Your message: ' . $message->getText());
-    }, function () {
-        return true;
-    });
-
-    $bot->run();
-} catch (\TelegramBot\Api\Exception $e) {
-    // $e->getMessage();
-    die($e->getMessage());
-}
-
-$update = json_decode($update, TRUE);
+// file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
 $command_data = '';
 if (isset($update['message'])) {
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Message: ' . $update['message']['text'] . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Message: ' . $update['message']['text'], FILE_APPEND);
     $user_data = [
         'user_id' => $update['message']['from']['id'],
         'is_bot' => (isset($update['message']['from']['is_bot']) && $update['message']['from']['is_bot'] !== 'false' && $update['message']['from']['is_bot'] !== false) ? 1 : 0,
@@ -62,7 +42,7 @@ if (isset($update['message'])) {
     $message = $update["message"]["text"];
     $message_type = $update["message"]["entities"][0]["type"];
 } elseif (isset($update['callback_query'])) {
-    file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Callback: ' . $update['callback_query']['data'] . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Callback: ' . $update['callback_query']['data'], FILE_APPEND);
     $user_data = [
         'user_id' => $update['callback_query']['from']['id'],
         'is_bot' => (isset($update['callback_query']['from']['is_bot']) && $update['messacallback_querye']['from']['is_bot'] !== 'false' && $update['callback_query']['from']['is_bot'] !== false) ? 1 : 0,
@@ -81,12 +61,11 @@ if (isset($update['message'])) {
     $message_type = $update['callback_query']["message"]["entities"][0]["type"];
     $command_data = $update['callback_query']['data'];
 }
-// print_r user_data to file
-// file_put_contents($log_dir . '/start.log', print_r($user_data, true), FILE_APPEND);
 
 if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 'bot_command') {
     switch ($message) {
         case '/start':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /start', FILE_APPEND);
             try {
                 $bot = new \TelegramBot\Api\BotApi($token);
                 $user_result = createUser($user_data);
@@ -103,33 +82,39 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     $existing_links = implode("\n", $user_result);
                     $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered. You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
                     $messageResponse = $bot->sendMessage($chatId, $messageText);
-                    file_put_contents($log_dir . '/start.log', ' | Existing links - ' . $existing_links . PHP_EOL, FILE_APPEND);
+                    file_put_contents($log_dir . '/start.log', ' | Existing links - ' . $existing_links, FILE_APPEND);
                 }
             } catch (Exception $e) {
-                file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
             }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
         case '/help':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /help', FILE_APPEND);
             try {
                 // Send message
                 $bot = new \TelegramBot\Api\BotApi($token);
                 $messageText = "You can get help here - https://wadamir.ru/upwork-tgm-bot/";
                 $messageResponse = $bot->sendMessage($chatId, $messageText);
             } catch (Exception $e) {
-                file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
             }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
         case '/addrss':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /addrss', FILE_APPEND);
             try {
                 // Send message
                 $bot = new \TelegramBot\Api\BotApi($token);
                 $messageText = "Send here your RSS link to get updates from it";
                 $messageResponse = $bot->sendMessage($chatId, $messageText);
             } catch (Exception $e) {
-                file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
             }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
         case '/removerss':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /removerss', FILE_APPEND);
             $existing_links = getRssLinksByUser($user_data['user_id']);
             if (count($existing_links) > 0) {
                 try {
@@ -153,7 +138,7 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     );
                     $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
                 } catch (Exception $e) {
-                    file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                    file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
                 }
             } else {
                 try {
@@ -162,20 +147,24 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     $messageText = "You don't have any RSS links. Send here your RSS link to get updates from it";
                     $messageResponse = $bot->sendMessage($chatId, $messageText);
                 } catch (Exception $e) {
-                    file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                    file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
                 }
             }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
         default:
+            file_put_contents($log_dir . '/start.log', ' | Bot command - undefined', FILE_APPEND);
             try {
                 // Send message
                 $bot = new \TelegramBot\Api\BotApi($token);
                 $messageResponse = $bot->sendMessage($chatId, "Something went wrong. Try again later, please...");
             } catch (Exception $e) {
-                file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
             }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
     }
 } elseif ($chat_type === 'message' && strpos($message, "https://www.upwork.com/") === 0 && $message_type === 'url') {
+    file_put_contents($log_dir . '/start.log', ' | Add RSS link - ' . $message, FILE_APPEND);
     try {
         $bot = new \TelegramBot\Api\BotApi($token);
         $add_rss_link_response = addRssLink($user_data['user_id'], $user_data['text']);
@@ -190,10 +179,11 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         }
     } catch (Exception $e) {
-        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
     }
+    file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
 } elseif ($chat_type === 'callback_query' && strpos($command_data, "removerss") === 0) {
-    file_put_contents($log_dir . '/start.log', ' | command_data - ' . $command_data . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | command_data - ' . $command_data, FILE_APPEND);
     try {
         $bot = new \TelegramBot\Api\BotApi($token);
         $rss_link_id = str_replace('removerss_', '', $command_data);
@@ -208,16 +198,19 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         }
     } catch (Exception $e) {
-        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
     }
+    file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
 } else {
+    file_put_contents($log_dir . '/start.log', ' | Bot command - undefined', FILE_APPEND);
     try {
         // Send message
         $bot = new \TelegramBot\Api\BotApi($token);
         $messageResponse = $bot->sendMessage($chatId, "Try again, please");
     } catch (Exception $e) {
-        file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
     }
+    file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
 }
 
 function createUser($user_data)
@@ -283,7 +276,6 @@ function updateUser($user_data)
     $updateRssLinksResult  = addRssLink($user_data['user_id'], $user_data['text']);
 
     // Close connection
-    file_put_contents($log_dir . '/start.log', ' | Close connection' . PHP_EOL, FILE_APPEND);
     mysqli_close($conn);
 
     return $updateRssLinksResult;
@@ -293,7 +285,7 @@ function getRssLinksByUser($user_id)
 {
     global $log_dir;
 
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Get RSS Links By User' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Get RSS Links By User' . PHP_EOL, FILE_APPEND);
 
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
@@ -305,7 +297,7 @@ function getRssLinksByUser($user_id)
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
-        file_put_contents($log_dir . '/start.log', ' | Add RSS Link - connection failed', FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | Get RSS Links By User - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
     $sql = "SELECT * FROM $table_rss_links WHERE user_id = " . $user_id;
@@ -322,7 +314,6 @@ function getRssLinksByUser($user_id)
     }
     file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links), FILE_APPEND);
     // Close connection
-    file_put_contents($log_dir . '/start.log', ' | Close connection' . PHP_EOL, FILE_APPEND);
     mysqli_close($conn);
 
     return $rss_links;
@@ -332,7 +323,7 @@ function addRssLink($user_id, $rss_link)
 {
     global $log_dir;
 
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Add RSS Link' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Add RSS Link', FILE_APPEND);
 
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
@@ -349,7 +340,7 @@ function addRssLink($user_id, $rss_link)
     $sql = "SELECT * FROM $table_rss_links WHERE rss_link = '" . $rss_link . "'";
     $result = mysqli_query($conn, $sql);
     if (mysqli_num_rows($result) > 0) {
-        file_put_contents($log_dir . '/start.log', ' | Rss link already exists', FILE_APPEND);
+        file_put_contents($log_dir . '/start.log', ' | RSS Link already exists', FILE_APPEND);
         mysqli_close($conn);
         return false;
     } else {
@@ -372,7 +363,7 @@ function removeRssLink($user_id, $id)
 {
     global $log_dir;
 
-    file_put_contents($log_dir . '/start.log', ' | [' . date('Y-m-d H:i:s') . '] Remove RSS Link' . $id . ' where user id - ' . $user_id . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Remove RSS Link' . $id . ' where user id - ' . $user_id, FILE_APPEND);
 
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbhost = env('MYSQL_HOST', 'localhost');
