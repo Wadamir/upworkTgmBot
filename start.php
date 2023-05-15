@@ -16,6 +16,24 @@ if (!$token) {
 
 $path = "https://api.telegram.org/bot$token";
 
+$bot = new \TelegramBot\Api\Client($token);
+$arUpdates = $bot->getUpdates();
+
+if (!empty($arUpdates['result'])) {
+    foreach ($arUpdates['result'] as $arResult) {
+        if (array_key_exists('callback_query', $arResult)) {
+
+            $userId = $arResult['callback_query']['from']['id'];
+
+            if ($arResult['callback_query']['data'] == 1) {
+                $bot->sendMessage($userId, 'Its ok!');
+            } else {
+                $bot->sendMessage($userId, 'Its not ok!');
+            }
+        }
+    }
+}
+
 $get_content = file_get_contents("php://input");
 if (!$get_content) {
     exit;
