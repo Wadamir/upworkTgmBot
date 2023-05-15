@@ -175,10 +175,10 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
     } catch (Exception $e) {
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
     }
-} elseif ($chat_type === 'callback_query' && strpos($message, "/removerss") === 0) {
+} elseif ($chat_type === 'callback_query' && strpos($command_data, "removerss") === 0) {
     try {
         $bot = new \TelegramBot\Api\BotApi($token);
-        $rss_link_id = str_replace('/removerss_', '', $message);
+        $rss_link_id = str_replace('removerss_', '', $message);
         $remove_rss_link_response = removeRssLink($user_data['user_id'], $rss_link_id);
         if ($remove_rss_link_response) {
             // Send message
