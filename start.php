@@ -44,7 +44,7 @@ if (!$get_content) {
     exit;
 }
 $update = json_decode($get_content, TRUE);
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+// file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
 
 if (isset($update['message'])) {
 
@@ -80,6 +80,8 @@ if (isset($update['message'])) {
     $message = $update['callback_query']["message"]["text"];
     $message_type = $update['callback_query']["message"]["entities"][0]["type"];
 }
+// print_r user_data to file
+file_put_contents($log_dir . '/start.log', print_r($user_data, true), FILE_APPEND);
 
 if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_bot'] === 0) {
     try {
