@@ -131,7 +131,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
 
             $fu = array();
             foreach ($existing_links as $key => $value) {
-                $fu[] = ['text' => ($i + 1), 'callback_data' => 'https://core.telegram.org'];
+                $fu[] = ['text' => ($key + 1), 'callback_data' => 'https://core.telegram.org'];
             }
             // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
