@@ -22,7 +22,7 @@ $arUpdates = $bot->getUpdates();
 if (!empty($arUpdates['result'])) {
     foreach ($arUpdates['result'] as $arResult) {
         if (array_key_exists('callback_query', $arResult)) {
-
+            /*
             $userId = $arResult['callback_query']['from']['id'];
 
             if ($arResult['callback_query']['data'] == 1) {
@@ -30,6 +30,11 @@ if (!empty($arUpdates['result'])) {
             } else {
                 $bot->sendMessage($userId, 'Its not ok!');
             }
+            */
+
+            file_put_contents($log_dir . '/start.log', PHP_EOL . ' | Callback query' . PHP_EOL, FILE_APPEND);
+            // print_r ($arResult) to file
+            file_put_contents($log_dir . '/start.log', print_r($arResult, true), FILE_APPEND);
         }
     }
 }
