@@ -100,7 +100,7 @@ $sql = "CREATE TABLE IF NOT EXISTS $table_data (
         `chat_id` bigint NOT NULL,
         `sent_to_user` tinyint DEFAULT NULL,
         `title` varchar(255) DEFAULT NULL,
-        `link` varchar(255) DEFAULT NULL,
+        `link` text DEFAULT NULL,
         `posted_on` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `category` varchar(255) DEFAULT NULL,
         `skills` varchar(255) DEFAULT NULL,
