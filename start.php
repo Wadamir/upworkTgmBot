@@ -114,17 +114,23 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // Send message
             $bot = new \TelegramBot\Api\BotApi($token);
             $rss_links = array();
-            // $buttons = array();
+            foreach ($existing_links as $key => $value) {
+                $rss_links[] = $key + 1 . '. ' . $value;
+            }
+            $existing_links_string = implode("\n", $rss_links);
+            // Print buttons array to file
+            // file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
+            $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links_string . "\nIf you want to remove your RSS link press the button.";
+
+
+            $buttons = array();
             foreach ($existing_links as $key => $value) {
                 $buttons[] = ['text' => $key + 1, 'callback_data' => $value];
                 $rss_links[] = $key + 1 . '. ' . $value;
             }
-            $existing_links = implode("\n", $rss_links);
-            // Print buttons array to file
-            // file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
-            $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to remove your RSS link press the button.";
+
             $fu = array();
-            for ($i = 0; $i < 3; $i++) {
+            foreach ($existing_links as $key => $value) {
                 $fu[] = ['text' => ($i + 1), 'callback_data' => 'https://core.telegram.org'];
             }
             // Send message with inline keyboard
