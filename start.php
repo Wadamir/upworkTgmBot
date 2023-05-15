@@ -116,16 +116,12 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             $rss_links = array();
             $buttons = array();
             foreach ($existing_links as $key => $value) {
-                $buttons[] =
-                    [
-                        'text' => $key + 1,
-                        'callback_data' => $value
-                    ];
+                $buttons[] = ['text' => $key + 1, 'callback_data' => $value];
                 $rss_links[] = $key + 1 . '. ' . $value;
             }
             $existing_links = implode("\n", $rss_links);
             // Print buttons array to file
-            file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
+            // file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
             $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to remove your RSS link press the button.";
             for ($i = 0; $i < 3; $i++) {
                 $fu[] = ['text' => ($i + 1), 'callback_data' => 'https://core.telegram.org'];
@@ -133,7 +129,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
-                    $fu
+                    $buttons
                 ]
             );
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
