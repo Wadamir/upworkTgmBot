@@ -176,6 +176,7 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
         file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
     }
 } elseif ($chat_type === 'callback_query' && strpos($command_data, "removerss") === 0) {
+    file_put_contents($log_dir . '/start.log', ' | ' . $command_data . PHP_EOL, FILE_APPEND);
     try {
         $bot = new \TelegramBot\Api\BotApi($token);
         $rss_link_id = str_replace('removerss_', '', $message);
