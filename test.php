@@ -15,7 +15,7 @@ if (!$token) {
 }
 
 // $path = "https://api.telegram.org/bot$token";
-
+/*
 $existing_links = [
     'https://www.vedomosti.ru/rss/news' => 'https://www.vedomosti.ru/rss/news',
     'https://www.vedomosti.ru/rss/issue' => 'https://www.vedomosti.ru/rss/issue',
@@ -45,7 +45,7 @@ foreach ($existing_links as $key => $value) {
 // var_dump($existing_links);
 // var_dump($rss_links);
 var_dump($buttons);
-
+*/
 
 $dbhost = env('MYSQL_HOST', 'localhost');
 $dbuser = env('MYSQL_USER', 'root');
@@ -60,7 +60,7 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
-$sql = "SELECT * FROM $table_users WHERE link IS NOT NULL";
+$sql = "SELECT * FROM $table_users WHERE id IS NOT NULL";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
     try {
@@ -68,7 +68,7 @@ if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/test.log', ' | Links exists! ', FILE_APPEND);
         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
         foreach ($rows as $row) {
-            $link = $row['link'];
+            // $link = $row['link'];
             $chatId = $row['chat_id'];
             // $chatId = intval('443r34r34rf');
             $refresh_time = $row['refresh_time'] * 60;
@@ -76,9 +76,9 @@ if (mysqli_num_rows($result) > 0) {
                 $refresh_time = 300;
             }
 
-            /*
-            $message = "Link: $link\nChat ID: $chatId\nRefresh time: $refresh_time";
 
+            $messageText = "Link: \nChat ID: $chatId\nRefresh time: $refresh_time";
+            /*
             $url = $path . "/sendmessage?chat_id=" . $chatId . "&text=" . urlencode($message) . "&parse_mode=HTML";
             $response = file_get_contents($url);
             $response = json_decode($response, true);
@@ -93,7 +93,7 @@ if (mysqli_num_rows($result) > 0) {
                 file_put_contents($log_dir . '/test.log', ' | Response - error!', FILE_APPEND);
             }
             */
-
+            /*
             // Send message
             $messageText = "Link: $link\nChat ID: $chatId\nRefresh time: $refresh_time";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
@@ -107,17 +107,20 @@ if (mysqli_num_rows($result) > 0) {
             // Send message with reply keyboard
             $keyboard = new \TelegramBot\Api\Types\ReplyKeyboardMarkup(array(array("one", "two", "three")), true); // true for one-time keyboard
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
-
+            */
+            // $fu = [['text' => 'link', 'url' => 'https://core.telegram.org'], ['text' => 'link2', 'url' => 'https://core.telegram.org'], ['text' => 'link3', 'url' => 'https://core.telegram.org']];
+            for ($i = 0; $i < 3; $i++) {
+                $fu[] = ['text' => ($i + 1), 'callback_data' => 'https://core.telegram.org'];
+            }
+            var_dump($fu);
             // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
-                    [
-                        ['text' => 'link', 'url' => 'https://core.telegram.org']
-                    ]
+                    $fu
                 ]
             );
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
-
+            /*
             // Send media group
             $media = new \TelegramBot\Api\Types\InputMedia\ArrayOfInputMedia();
             $media->addItem(new TelegramBot\Api\Types\InputMedia\InputMediaPhoto('https://avatars3.githubusercontent.com/u/9335727'));

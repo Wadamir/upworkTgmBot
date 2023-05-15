@@ -128,12 +128,9 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             file_put_contents($log_dir . '/start.log', ' | Buttons array - ' . print_r((object)$buttons, true) . PHP_EOL, FILE_APPEND);
             $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to remove your RSS link press the button.";
             // Send message with inline keyboard
-            // Send message with inline keyboard
             $keyboard = new \TelegramBot\Api\Types\Inline\InlineKeyboardMarkup(
                 [
-
-                    (object)$buttons
-
+                    $buttons
                 ]
             );
             $bot->sendMessage($chatId, $messageText, null, false, null, $keyboard);
