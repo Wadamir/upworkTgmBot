@@ -13,15 +13,34 @@ if (!$token) {
     file_put_contents($log_dir . '/start.log', ' | Token not found', FILE_APPEND);
     throw new ErrorException('Не указан токен бота');
 }
-
-$path = "https://api.telegram.org/bot$token";
-
+/*
 $get_content = file_get_contents("php://input");
 if (!$get_content) {
     exit;
 }
 $update = json_decode($get_content, TRUE);
 file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Received: ' . $get_content . PHP_EOL, FILE_APPEND);
+*/
+
+try {
+    $bot = new \TelegramBot\Api\Client($token);
+
+    //Handle text messages
+    $bot->on(function (\TelegramBot\Api\Types\Update $update) use ($bot) {
+        $message = $update->getMessage();
+        $id = $message->getChat()->getId();
+        $bot->sendMessage($id, 'Your message: ' . $message->getText());
+    }, function () {
+        return true;
+    });
+
+    $bot->run();
+} catch (\TelegramBot\Api\Exception $e) {
+    // $e->getMessage();
+    die($e->getMessage());
+}
+
+$update = json_decode($update, TRUE);
 
 $command_data = '';
 if (isset($update['message'])) {
@@ -75,7 +94,6 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     // Send message
                     $messageText = "Hello, " . $user_data['first_name'] . "!" . " Send here your RSS link to get updates from it.";
                     $messageResponse = $bot->sendMessage($chatId, $messageText);
-                    // file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "!" . " Send here your rss link to get updates from it");
                 } else {
                     // Send message
                     $total_links = count($user_result);
@@ -86,7 +104,6 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered. You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
                     $messageResponse = $bot->sendMessage($chatId, $messageText);
                     file_put_contents($log_dir . '/start.log', ' | Existing links - ' . $existing_links . PHP_EOL, FILE_APPEND);
-                    //file_get_contents($path . "/sendmessage?chat_id=" . $chatId . "&text=Hello, " . $user_data['first_name'] . "! You are already registered. Your RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.");
                 }
             } catch (Exception $e) {
                 file_put_contents($log_dir . '/start.log', ' | ' . $e->getMessage(), FILE_APPEND);
@@ -183,11 +200,11 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
         $remove_rss_link_response = removeRssLink($user_data['user_id'], $rss_link_id);
         if ($remove_rss_link_response) {
             // Send message
-            $messageText = "Ok, " . $user_data['first_name'] . "! I will not send you updates from this channel.";
+            $messageText = "Ok, " . $user_data['first_name'] . "! This RSS chanel removed.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         } else {
             // Send message
-            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS link is already removed.";
+            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS chanel was deleted earlier or is missing..";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         }
     } catch (Exception $e) {
@@ -230,8 +247,6 @@ function createUser($user_data)
         return $rss_links;
     } else {
         // Insert user
-        // $rss_links = json_encode($user_data['text']);
-        // $user_data['rss_links'] = $rss_links;
         unset($user_data['text']);
         $columns = implode(", ", array_keys($user_data));
         $escaped_values = array_map(array($conn, 'real_escape_string'), array_values($user_data));
