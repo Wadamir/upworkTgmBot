@@ -78,7 +78,7 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
                     $total_links = count($user_result);
                     $user_rss_links = [];
                     foreach ($user_result as $key => $value) {
-                        $user_rss_links[] = $key + 1 . '. ' . $value;
+                        $user_rss_links[] = $key + 1 . '. ' . $value['rss_link'];
                     }
                     $existing_links = implode("\n", $user_rss_links);
                     $messageText = "Hello, " . $user_data['first_name'] . "! You are already registered.\nYou have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
