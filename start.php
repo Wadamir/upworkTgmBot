@@ -114,7 +114,7 @@ if (strpos($message, "/start") === 0 && $message === '/start' && $user_data['is_
             // Send message
             $bot = new \TelegramBot\Api\BotApi($token);
             $rss_links = array();
-            $buttons = array();
+            // $buttons = array();
             foreach ($existing_links as $key => $value) {
                 $buttons[] = ['text' => $key + 1, 'callback_data' => $value];
                 $rss_links[] = $key + 1 . '. ' . $value;
