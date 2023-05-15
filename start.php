@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/start.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
+file_put_contents($log_dir . '/start.log', PHP_EOL . '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
 
 $token = env('TOKEN', null);
 if (!$token) {
@@ -16,28 +16,28 @@ if (!$token) {
 
 $path = "https://api.telegram.org/bot$token";
 
-$bot = new \TelegramBot\Api\Client($token);
-$arUpdates = $bot->getUpdates();
+// $bot = new \TelegramBot\Api\Client($token);
+// $arUpdates = $bot->getUpdates();
 
-if (!empty($arUpdates['result'])) {
-    foreach ($arUpdates['result'] as $arResult) {
-        if (array_key_exists('callback_query', $arResult)) {
-            /*
-            $userId = $arResult['callback_query']['from']['id'];
+// if (!empty($arUpdates['result'])) {
+//     foreach ($arUpdates['result'] as $arResult) {
+//         if (array_key_exists('callback_query', $arResult)) {
 
-            if ($arResult['callback_query']['data'] == 1) {
-                $bot->sendMessage($userId, 'Its ok!');
-            } else {
-                $bot->sendMessage($userId, 'Its not ok!');
-            }
-            */
+//             $userId = $arResult['callback_query']['from']['id'];
 
-            file_put_contents($log_dir . '/start.log', PHP_EOL . ' | Callback query' . PHP_EOL, FILE_APPEND);
-            // print_r ($arResult) to file
-            file_put_contents($log_dir . '/start.log', print_r($arResult, true), FILE_APPEND);
-        }
-    }
-}
+//             if ($arResult['callback_query']['data'] == 1) {
+//                 $bot->sendMessage($userId, 'Its ok!');
+//             } else {
+//                 $bot->sendMessage($userId, 'Its not ok!');
+//             }
+
+
+//             file_put_contents($log_dir . '/start.log', PHP_EOL . ' | Callback query' . PHP_EOL, FILE_APPEND);
+//             // print_r ($arResult) to file
+//             file_put_contents($log_dir . '/start.log', print_r($arResult, true), FILE_APPEND);
+//         }
+//     }
+// }
 
 $get_content = file_get_contents("php://input");
 if (!$get_content) {
