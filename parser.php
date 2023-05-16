@@ -38,7 +38,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
         foreach ($rows as $row) {
-            file_put_contents($log_dir . '/parser.log', ' | RSS Link for user ' . $row['username'] . ' exist!', FILE_APPEND);
+            file_put_contents($log_dir . '/parser.log', ' | RSS Link for ' . $row['username'] . ' exist!', FILE_APPEND);
             $link = $row['rss_link'];
             $chat_id = $row['chat_id'];
             $refresh_time = $row['refresh_time'] * 60;
@@ -206,7 +206,7 @@ if (mysqli_num_rows($users_result)) {
             }
         }
 
-        file_put_contents($log_dir . '/parser.log', ' | Messages for ' . $username . ' sent: ' . $counter, FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', ' | Msgs for ' . $username . ' sent: ' . $counter, FILE_APPEND);
     }
 }
 file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
