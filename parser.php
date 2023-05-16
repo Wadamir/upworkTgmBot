@@ -6,12 +6,12 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
 
-file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start ', FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start parsing', FILE_APPEND);
 
 $token = env('TOKEN', null);
 if (!$token) {
-    file_put_contents($log_dir . '/parser.log', ' | Token not found' . PHP_EOL, FILE_APPEND);
-    throw new ErrorException('Не указан токен бота');
+    file_put_contents($log_dir . '/parser.log', ' | ERROR! Token not found' . PHP_EOL, FILE_APPEND);
+    die('Token not found!') . PHP_EOL;
 }
 
 // $path = "https://api.telegram.org/bot$token";
@@ -26,19 +26,19 @@ $table_data = env('MYSQL_TABLE_DATA', 'data');
 // Create connection
 $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
 if (!$conn) {
-    file_put_contents($log_dir . '/parser.log', ' | Connection failed' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/parser.log', ' | ERROR! Connection failed' . PHP_EOL, FILE_APPEND);
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
-$sql = "SELECT * FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL";
+$sql = "SELECT * FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL AND trl.rss_link IS NOT NULL";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
     try {
         $bot = new \TelegramBot\Api\BotApi($token);
 
-        file_put_contents($log_dir . '/parser.log', ' | Links exists! ', FILE_APPEND);
         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
         foreach ($rows as $row) {
+            file_put_contents($log_dir . '/parser.log', ' | RSS Link for user ' . $row['username'] . ' exist!', FILE_APPEND);
             $link = $row['rss_link'];
             $chat_id = $row['chat_id'];
             $refresh_time = $row['refresh_time'] * 60;
@@ -52,9 +52,7 @@ if (mysqli_num_rows($result) > 0) {
             $date_diff = strtotime($date_now) - strtotime($date_updated);
             // echo $date_diff . PHP_EOL;
             if ($date_diff > $refresh_time) {
-
                 file_put_contents($log_dir . '/parser.log', ' | Time to update!', FILE_APPEND);
-
                 $xml = simplexml_load_file($link);
                 foreach ($xml->channel->item as $item) {
                     // var_dump($item);
@@ -115,7 +113,7 @@ if (mysqli_num_rows($result) > 0) {
                     // echo $title . ' | ' . $link . ' | ' . $posted_on . ' | ' . $category . ' | ' . $skills . ' | ' . $country . ' | ' . $budget . ' | ' . $hourly_min . ' | ' . $hourly_max . PHP_EOL;
 
                     // Check if data exists
-                    $sql = "SELECT * FROM $table_data WHERE link = '$link'";
+                    $sql = "SELECT * FROM $table_data WHERE link = '$link' AND chat_id = '$chat_id'";
                     $result = mysqli_query($conn, $sql);
 
                     if (mysqli_num_rows($result) === 0) {
@@ -143,68 +141,72 @@ if (mysqli_num_rows($result) > 0) {
         }
     } catch (Exception $e) {
         file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+        die();
     }
 }
+file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 
 // Send messages to telegram
-$sql = "SELECT * FROM $table_data WHERE sent_to_user = 0 OR sent_to_user IS NULL";
-$result = mysqli_query($conn, $sql);
-$counter = 0;
-if (mysqli_num_rows($result) > 0) {
-    $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
-    foreach ($rows as $row) {
-        $chat_id = $row['chat_id'];
-        $title = $row['title'];
-        $link = $row['link'];
-        $posted_on = $row['posted_on'];
-        $category = $row['category'];
-        $skills = $row['skills'];
-        $country = $row['country'];
-        $budget = $row['budget'];
-        $hourly_min = $row['hourly_min'];
-        $hourly_max = $row['hourly_max'];
+file_put_contents($log_dir . '/sender.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm' . PHP_EOL, FILE_APPEND);
+// Select users from users table
+$sql = "SELECT * FROM $table_users";
+$users_result = mysqli_query($conn, $sql);
+if (mysqli_num_rows($users_result)) {
+    $users_rows = mysqli_fetch_all($users_result, MYSQLI_ASSOC);
+    foreach ($users_rows as $user) {
+        $chat_id = $user['chat_id'];
+        $username = $user['username'];
+        $sql = "SELECT * FROM $table_data WHERE (chat_id = $chat_id AND sent_to_user = 0) OR (chat_id = $chat_id AND sent_to_user IS NULL)";
+        $result = mysqli_query($conn, $sql);
+        $counter = 0;
+        if (mysqli_num_rows($result) > 0) {
+            $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
+            foreach ($rows as $row) {
+                $chat_id = $row['chat_id'];
+                $title = $row['title'];
+                $link = $row['link'];
+                $posted_on = $row['posted_on'];
+                $category = $row['category'];
+                $skills = $row['skills'];
+                $country = $row['country'];
+                $budget = $row['budget'];
+                $hourly_min = $row['hourly_min'];
+                $hourly_max = $row['hourly_max'];
 
-        $message = "<b>$title</b>\n";
-        $message .= "<b>Category</b>: $category\n";
-        $message .= "<b>Skills</b>: $skills\n";
-        $message .= "<b>Country</b>: $country\n";
-        if ($budget > 0) {
-            $message .= "<b>Budget</b>: $budget\n";
-        }
-        if ($hourly_min > 0 && $hourly_max > 0) {
-            $message .= "<b>Hourly Range</b>: $hourly_min - $hourly_max\n";
-        }
-        if ($budget == 0 && $hourly_min == 0 && $hourly_max == 0) {
-            $message .= "<b>Budget</b>: No data!\n";
-        }
-        $message .= "<b>Posted on</b>: $posted_on\n";
-        $message .= "<a href='$link'>Link</a>";
+                $message = "<b>$title</b>\n";
+                $message .= "<b>Category</b>: $category\n";
+                $message .= "<b>Skills</b>: $skills\n";
+                $message .= "<b>Country</b>: $country\n";
+                if ($budget > 0) {
+                    $message .= "<b>Budget</b>: $budget\n";
+                }
+                if ($hourly_min > 0 && $hourly_max > 0) {
+                    $message .= "<b>Hourly Range</b>: $hourly_min - $hourly_max\n";
+                }
+                if ($budget == 0 && $hourly_min == 0 && $hourly_max == 0) {
+                    $message .= "<b>Budget</b>: No data!\n";
+                }
+                $message .= "<b>Posted on</b>: $posted_on\n";
+                $message .= "<a href='$link'>Link</a>";
 
-        try {
-            $bot = new \TelegramBot\Api\BotApi($token);
-            $bot->sendMessage($chat_id, $message, 'HTML');
-            // Update sent_to_user
-            $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
-            if (!mysqli_query($conn, $sql)) {
-                file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
+                try {
+                    $bot = new \TelegramBot\Api\BotApi($token);
+                    $bot->sendMessage($chat_id, $message, 'HTML');
+                    // Update sent_to_user
+                    $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
+                    if (!mysqli_query($conn, $sql)) {
+                        file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
+                        die();
+                    }
+                } catch (\TelegramBot\Api\Exception $e) {
+                    file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                    die();
+                }
+                $counter++;
             }
-        } catch (\TelegramBot\Api\Exception $e) {
-            file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
         }
-        /*
-        $url = $path . "/sendmessage?chat_id=" . $chat_id . "&text=" . urlencode($message) . "&parse_mode=HTML";
-        $response = file_get_contents($url);
-        $response = json_decode($response, true);
-        if ($response['ok'] === true) {
-            file_put_contents($log_dir . '/parser.log', ' | Response - ok', FILE_APPEND);
-        } else {
-            file_put_contents($log_dir . '/parser.log', ' | Response - error!', FILE_APPEND);
-        }
-        */
-        $counter++;
+
+        file_put_contents($log_dir . '/parser.log', ' | Total messages for user ' . $username . ' sent: ' . $counter . PHP_EOL, FILE_APPEND);
     }
 }
-
-file_put_contents($log_dir . '/parser.log', ' | Total messages sent: ' . $counter . PHP_EOL, FILE_APPEND);
-
 mysqli_close($conn);
