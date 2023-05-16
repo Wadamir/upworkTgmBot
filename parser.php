@@ -147,7 +147,7 @@ if (mysqli_num_rows($result) > 0) {
 file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 
 // Send messages to telegram
-file_put_contents($log_dir . '/sender.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm' . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm' . PHP_EOL, FILE_APPEND);
 // Select users from users table
 $sql = "SELECT * FROM $table_users";
 $users_result = mysqli_query($conn, $sql);
@@ -206,7 +206,8 @@ if (mysqli_num_rows($users_result)) {
             }
         }
 
-        file_put_contents($log_dir . '/parser.log', ' | Total messages for user ' . $username . ' sent: ' . $counter . PHP_EOL, FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', ' | Total messages for user ' . $username . ' sent: ' . $counter, FILE_APPEND);
     }
 }
+file_put_contents($log_dir . '/parser.log', ' | [' . date('Y-m-d H:i:s') . '] End sending to tgm' . PHP_EOL, FILE_APPEND);
 mysqli_close($conn);
