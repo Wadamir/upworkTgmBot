@@ -52,7 +52,7 @@ if (mysqli_num_rows($result) > 0) {
             $date_diff = strtotime($date_now) - strtotime($date_updated);
             // echo $date_diff . PHP_EOL;
             if ($date_diff > $refresh_time) {
-                file_put_contents($log_dir . '/parser.log', ' | Time to update!', FILE_APPEND);
+                // file_put_contents($log_dir . '/parser.log', ' | Time to update!', FILE_APPEND);
                 $xml = simplexml_load_file($link);
                 foreach ($xml->channel->item as $item) {
                     // var_dump($item);
@@ -136,7 +136,7 @@ if (mysqli_num_rows($result) > 0) {
                     }
                 }
             } else {
-                file_put_contents($log_dir . '/parser.log', ' | Time to update: ' . $date_diff, FILE_APPEND);
+                file_put_contents($log_dir . '/parser.log', ' | Not time to update: ' . $date_diff, FILE_APPEND);
             }
         }
     } catch (Exception $e) {
@@ -206,8 +206,8 @@ if (mysqli_num_rows($users_result)) {
             }
         }
 
-        file_put_contents($log_dir . '/parser.log', ' | Total messages for user ' . $username . ' sent: ' . $counter, FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', ' | Messages for ' . $username . ' sent: ' . $counter, FILE_APPEND);
     }
 }
-file_put_contents($log_dir . '/parser.log', ' | [' . date('Y-m-d H:i:s') . '] End sending to tgm' . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 mysqli_close($conn);
