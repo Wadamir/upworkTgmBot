@@ -147,7 +147,7 @@ if (mysqli_num_rows($result) > 0) {
 file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 
 // Send messages to telegram
-file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm' . PHP_EOL, FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm', FILE_APPEND);
 // Select users from users table
 $sql = "SELECT * FROM $table_users";
 $users_result = mysqli_query($conn, $sql);
