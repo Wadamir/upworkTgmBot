@@ -114,6 +114,37 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
             }
             file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
+        case '/getrss':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /getrss', FILE_APPEND);
+            $rss_links = getRssLinksByUser($user_data['user_id']);
+            $total_links = count($rss_links);
+            $user_rss_links = [];
+            if ($total_links === 0) {
+                try {
+                    // Send message
+                    $bot = new \TelegramBot\Api\BotApi($token);
+                    $messageText = "You have no RSS links. Send here your RSS link to get updates from it";
+                    $messageResponse = $bot->sendMessage($chatId, $messageText);
+                } catch (Exception $e) {
+                    file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
+                }
+                file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
+                break;
+            }
+            foreach ($rss_links as $key => $value) {
+                $user_rss_links[] = $key + 1 . '. ' . $value['rss_link'];
+            }
+            $existing_links = implode("\n", $user_rss_links);
+            try {
+                // Send message
+                $bot = new \TelegramBot\Api\BotApi($token);
+                $messageText = "You have " . $total_links . " RSS links:\n" . $existing_links . "\nIf you want to add or remove your RSS links use menu.";
+                $messageResponse = $bot->sendMessage($chatId, $messageText);
+            } catch (Exception $e) {
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
+            }
+            file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
+            break;
         case '/addrss':
             file_put_contents($log_dir . '/start.log', ' | Bot command - /addrss', FILE_APPEND);
             try {
@@ -184,11 +215,11 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
         if ($add_rss_link_response) {
             // Send message
             $existing_links = implode("\n", $user_result);
-            $messageText = "Ok, " . $user_data['first_name'] . "! I will send you updates from this channel.";
+            $messageText = "Ok, " . $user_data['first_name'] . "! I will send you updates from this channel. Use /getrss command to get list of your RSS links.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         } else {
             // Send message
-            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS link is already added.";
+            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS link is already added. Use /getrss command to get list of your RSS links.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         }
     } catch (Exception $e) {
@@ -203,11 +234,11 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
         $remove_rss_link_response = removeRssLink($user_data['user_id'], $rss_link_id);
         if ($remove_rss_link_response) {
             // Send message
-            $messageText = "Ok, " . $user_data['first_name'] . "! This RSS chanel removed.";
+            $messageText = "Ok, " . $user_data['first_name'] . "! This RSS chanel removed. Use /getrss command to get list of your RSS links.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         } else {
             // Send message
-            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS chanel was deleted earlier or is missing..";
+            $messageText = "Sorry, " . $user_data['first_name'] . "! This RSS chanel was deleted earlier or is missing. Use /getrss command to get list of your RSS links.";
             $messageResponse = $bot->sendMessage($chatId, $messageText);
         }
     } catch (Exception $e) {
