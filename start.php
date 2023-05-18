@@ -95,12 +95,13 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
             try {
                 // Send message
                 $bot = new \TelegramBot\Api\BotApi($token);
-                $messageText = "You are unsubscribed from bot updates.";
+                $messageText = "You are unsubscribed from bot updates. If you decide to restore notifications, use the /start command. You can find help setting up the bot here - https://wadamir.ru/upwork-tgm-bot/";
                 $messageResponse = $bot->sendMessage($chatId, $messageText);
                 deactivateUser($user_data['user_id']);
             } catch (Exception $e) {
                 file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
             }
+            break;
         case '/help':
             file_put_contents($log_dir . '/start.log', ' | Bot command - /help', FILE_APPEND);
             try {
