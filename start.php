@@ -90,6 +90,17 @@ if ($chat_type === 'message' && $user_data['is_bot'] === 0 && $message_type === 
             }
             file_put_contents($log_dir . '/start.log', PHP_EOL, FILE_APPEND);
             break;
+        case '/stop':
+            file_put_contents($log_dir . '/start.log', ' | Bot command - /stop', FILE_APPEND);
+            try {
+                // Send message
+                $bot = new \TelegramBot\Api\BotApi($token);
+                $messageText = "You are unsubscribed from bot updates.";
+                $messageResponse = $bot->sendMessage($chatId, $messageText);
+                deactivateUser($user_data['user_id']);
+            } catch (Exception $e) {
+                file_put_contents($log_dir . '/start.log', ' | ERROR - ' . $e->getMessage(), FILE_APPEND);
+            }
         case '/help':
             file_put_contents($log_dir . '/start.log', ' | Bot command - /help', FILE_APPEND);
             try {
@@ -277,6 +288,35 @@ function activateUser($user_id)
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
     $sql = "UPDATE $table_users SET is_deleted = NULL WHERE user_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
+    }
+    // Close connection
+    mysqli_close($conn);
+
+    return true;
+}
+
+
+function deactivateUser($user_id)
+{
+    global $log_dir;
+
+    $dbhost = env('MYSQL_HOST', 'localhost');
+    $dbuser = env('MYSQL_USER', 'root');
+    $dbpass = env('MYSQL_PASSWORD', '');
+    $dbname = env('MYSQL_DB', 'telegram_bot');
+    $table_users = env('MYSQL_TABLE_USERS', 'users');
+    $table_data = env('MYSQL_TABLE_DATA', 'data');
+    // Create connection
+    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+    if (!$conn) {
+        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $sql = "UPDATE $table_users SET is_deleted = 1 WHERE user_id = " . $user_id;
     $result = mysqli_query($conn, $sql);
     if (!$result) {
         file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
