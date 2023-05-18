@@ -330,7 +330,7 @@ function deactivateUser($user_id)
         file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
         throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
     }
-    
+
     // Close connection
     mysqli_close($conn);
 
@@ -393,7 +393,7 @@ function getRssLinksByUser($user_id)
             ];
         }
     }
-    file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links), FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links['rss_link']), FILE_APPEND);
     // Close connection
     mysqli_close($conn);
 
