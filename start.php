@@ -322,6 +322,15 @@ function deactivateUser($user_id)
         file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
         throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
     }
+
+    // remove all from data table
+    $sql = "DELETE FROM $table_data WHERE chat_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
+    }
+    
     // Close connection
     mysqli_close($conn);
 

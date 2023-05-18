@@ -40,6 +40,7 @@ if (mysqli_num_rows($result) > 0) {
         foreach ($rows as $row) {
             // file_put_contents($log_dir . '/parser.log', ' | RSS Link for ' . $row['username'] . ' exist!', FILE_APPEND);
             $link = $row['rss_link'];
+            $user_id = $row['user_id'];
             $chat_id = $row['chat_id'];
             $refresh_time = $row['refresh_time'] * 60;
             if ($refresh_time == 0) {
@@ -205,13 +206,7 @@ if (mysqli_num_rows($users_result)) {
                     $error = $e->getMessage();
                     file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' Error: ' . $e->getMessage(), FILE_APPEND);
                     if ($error === 'Forbidden: bot was blocked by the user') {
-                        $sql = "UPDATE $table_users SET is_deleted = 1 WHERE chat_id = '$chat_id'";
-                        if (!mysqli_query($conn, $sql)) {
-                            file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
-                            die();
-                        } else {
-                            file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' is_deleted', FILE_APPEND);
-                        }
+                        deactivateUser($user_id);
                     }
                     break;
                 }
@@ -226,3 +221,44 @@ if (mysqli_num_rows($users_result)) {
 }
 file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 mysqli_close($conn);
+
+function deactivateUser($user_id)
+{
+    global $log_dir;
+
+    $dbhost = env('MYSQL_HOST', 'localhost');
+    $dbuser = env('MYSQL_USER', 'root');
+    $dbpass = env('MYSQL_PASSWORD', '');
+    $dbname = env('MYSQL_DB', 'telegram_bot');
+    $table_users = env('MYSQL_TABLE_USERS', 'users');
+    $table_data = env('MYSQL_TABLE_DATA', 'data');
+    // Create connection
+    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+    if (!$conn) {
+        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $sql = "UPDATE $table_users SET is_deleted = 1 WHERE user_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
+    } else {
+        file_put_contents($log_dir . '/start.log', " | User $user_id deactivated", FILE_APPEND);
+    }
+
+    // remove all from data table
+    $sql = "DELETE FROM $table_data WHERE chat_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
+    } else {
+        file_put_contents($log_dir . '/start.log', " | User $user_id data deleted", FILE_APPEND);
+    }
+
+    // Close connection
+    mysqli_close($conn);
+
+    return true;
+}
