@@ -38,7 +38,7 @@ if (mysqli_num_rows($result) > 0) {
 
         $rows = mysqli_fetch_all($result, MYSQLI_ASSOC);
         foreach ($rows as $row) {
-            file_put_contents($log_dir . '/parser.log', ' | RSS Link for ' . $row['username'] . ' exist!', FILE_APPEND);
+            // file_put_contents($log_dir . '/parser.log', ' | RSS Link for ' . $row['username'] . ' exist!', FILE_APPEND);
             $link = $row['rss_link'];
             $chat_id = $row['chat_id'];
             $refresh_time = $row['refresh_time'] * 60;
@@ -144,12 +144,12 @@ if (mysqli_num_rows($result) > 0) {
         die();
     }
 }
-file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
+// file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 
 // Send messages to telegram
-file_put_contents($log_dir . '/parser.log', '[' . date('Y-m-d H:i:s') . '] Start sending to tgm', FILE_APPEND);
+file_put_contents($log_dir . '/parser.log', ' | Start sending to tgm', FILE_APPEND);
 // Select users from users table
-$sql = "SELECT * FROM $table_users";
+$sql = "SELECT * FROM $table_users WHERE is_deleted = 0 OR is_deleted IS NULL";
 $users_result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($users_result)) {
     $users_rows = mysqli_fetch_all($users_result, MYSQLI_ASSOC);
@@ -195,11 +195,19 @@ if (mysqli_num_rows($users_result)) {
                     // Update sent_to_user
                     $sql = "UPDATE $table_data SET sent_to_user = 1 WHERE link = '$link'";
                     if (!mysqli_query($conn, $sql)) {
-                        file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn), FILE_APPEND);
+                        file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
                         die();
                     }
                 } catch (\TelegramBot\Api\Exception $e) {
+                    $error = $e->getMessage();
                     file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                    if ($error === 'Forbidden: bot was blocked by the user') {
+                        $sql = "UPDATE $table_users SET is_deleted = 1 WHERE chat_id = '$chat_id'";
+                        if (!mysqli_query($conn, $sql)) {
+                            file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
+                            die();
+                        }
+                    }
                     die();
                 }
                 $counter++;
@@ -208,6 +216,8 @@ if (mysqli_num_rows($users_result)) {
 
         file_put_contents($log_dir . '/parser.log', ' | Msgs for ' . $username . ' sent: ' . $counter, FILE_APPEND);
     }
+} else {
+    file_put_contents($log_dir . '/parser.log', ' | No users found', FILE_APPEND);
 }
 file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 mysqli_close($conn);

@@ -235,6 +235,8 @@ function createUser($user_data)
     $rss_links = '';
     if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/start.log', ' | User already exists', FILE_APPEND);
+        activateUser($user_data['user_id']);
+
         $rss_links = getRssLinksByUser($user_data['user_id']);
         // Close connection
         mysqli_close($conn);
@@ -255,6 +257,35 @@ function createUser($user_data)
         mysqli_close($conn);
         return true;
     }
+}
+
+
+function activateUser($user_id)
+{
+    global $log_dir;
+
+    $dbhost = env('MYSQL_HOST', 'localhost');
+    $dbuser = env('MYSQL_USER', 'root');
+    $dbpass = env('MYSQL_PASSWORD', '');
+    $dbname = env('MYSQL_DB', 'telegram_bot');
+    $table_users = env('MYSQL_TABLE_USERS', 'users');
+    $table_data = env('MYSQL_TABLE_DATA', 'data');
+    // Create connection
+    $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+    if (!$conn) {
+        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
+    }
+    $sql = "UPDATE $table_users SET is_deleted = NULL WHERE user_id = " . $user_id;
+    $result = mysqli_query($conn, $sql);
+    if (!$result) {
+        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
+    }
+    // Close connection
+    mysqli_close($conn);
+
+    return true;
 }
 
 
