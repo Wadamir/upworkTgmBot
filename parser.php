@@ -30,7 +30,7 @@ if (!$conn) {
     die("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
 }
 // Check if user exists
-$sql = "SELECT * FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE tu.is_deleted IS NULL AND trl.rss_link IS NOT NULL";
+$sql = "SELECT * FROM $table_users tu LEFT JOIN $table_rss_links trl ON tu.user_id = trl.user_id WHERE (tu.is_deleted IS NULL AND trl.rss_link IS NOT NULL) OR (tu.is_deleted = 0 AND trl.rss_link IS NOT NULL)";
 $result = mysqli_query($conn, $sql);
 if (mysqli_num_rows($result) > 0) {
     try {
@@ -143,6 +143,9 @@ if (mysqli_num_rows($result) > 0) {
         file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
         die();
     }
+} else {
+    file_put_contents($log_dir . '/parser.log', ' | No users to parse' . PHP_EOL, FILE_APPEND);
+    die();
 }
 // file_put_contents($log_dir . '/parser.log', ' | End: ' . date('Y-m-d H:i:s') . PHP_EOL, FILE_APPEND);
 
