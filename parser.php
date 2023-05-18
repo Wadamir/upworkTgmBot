@@ -240,26 +240,26 @@ function deactivateUser($user_id)
     // Create connection
     $conn = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
     if (!$conn) {
-        file_put_contents($log_dir . '/start.log', ' | Update User - connection failed', FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', ' | Update User - connection failed', FILE_APPEND);
         throw new Exception("Connection failed: " . mysqli_connect_error()) . PHP_EOL;
     }
     $sql = "UPDATE $table_users SET is_deleted = 1 WHERE user_id = " . $user_id;
     $result = mysqli_query($conn, $sql);
     if (!$result) {
-        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
         throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
     } else {
-        file_put_contents($log_dir . '/start.log', " | User $user_id deactivated", FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', " | User $user_id deactivated", FILE_APPEND);
     }
 
     // remove all from data table
     $sql = "DELETE FROM $table_data WHERE chat_id = " . $user_id;
     $result = mysqli_query($conn, $sql);
     if (!$result) {
-        file_put_contents($log_dir . '/start.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', " | Error: " . $sql . ' | ' . mysqli_error($conn), FILE_APPEND);
         throw new Exception("Error: " . $sql . ' | ' . mysqli_error($conn));
     } else {
-        file_put_contents($log_dir . '/start.log', " | User $user_id data deleted", FILE_APPEND);
+        file_put_contents($log_dir . '/parser.log', " | User $user_id data deleted", FILE_APPEND);
     }
 
     // Close connection
