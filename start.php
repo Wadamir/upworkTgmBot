@@ -366,7 +366,7 @@ function getRssLinksByUser($user_id)
 {
     global $log_dir;
 
-    file_put_contents($log_dir . '/start.log', ' | Get RSS Links By User' . PHP_EOL, FILE_APPEND);
+    file_put_contents($log_dir . '/start.log', ' | Get RSS Links By User', FILE_APPEND);
 
     $dbhost = env('MYSQL_HOST', 'localhost');
     $dbuser = env('MYSQL_USER', 'root');
@@ -393,7 +393,6 @@ function getRssLinksByUser($user_id)
             ];
         }
     }
-    file_put_contents($log_dir . '/start.log', ' | RSS Links - ' . implode(', ', $rss_links['rss_link']), FILE_APPEND);
     // Close connection
     mysqli_close($conn);
 
