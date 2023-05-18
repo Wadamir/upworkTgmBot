@@ -207,7 +207,7 @@ if (mysqli_num_rows($users_result)) {
                     file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' Error: ' . $e->getMessage(), FILE_APPEND);
                     if ($error === 'Forbidden: bot was blocked by the user') {
                         try {
-                            file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' try to deactivate', FILE_APPEND);
+                            // file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' try to deactivate', FILE_APPEND);
                             deactivateUser($user_id);
                         } catch (Exception $e) {
                             file_put_contents($log_dir . '/parser.log', ' | Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
