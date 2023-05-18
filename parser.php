@@ -203,17 +203,17 @@ if (mysqli_num_rows($users_result)) {
                     }
                 } catch (\TelegramBot\Api\Exception $e) {
                     $error = $e->getMessage();
-                    file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' Error: ' . $e->getMessage() . PHP_EOL, FILE_APPEND);
+                    file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' Error: ' . $e->getMessage(), FILE_APPEND);
                     if ($error === 'Forbidden: bot was blocked by the user') {
                         $sql = "UPDATE $table_users SET is_deleted = 1 WHERE chat_id = '$chat_id'";
                         if (!mysqli_query($conn, $sql)) {
                             file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
                             die();
                         } else {
-                            file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' is_deleted' . PHP_EOL, FILE_APPEND);
+                            file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' is_deleted', FILE_APPEND);
                         }
                     }
-                    die();
+                    break;
                 }
                 $counter++;
             }
