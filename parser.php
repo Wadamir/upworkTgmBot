@@ -209,6 +209,8 @@ if (mysqli_num_rows($users_result)) {
                         if (!mysqli_query($conn, $sql)) {
                             file_put_contents($log_dir . '/parser.log', ' | Error: ' . mysqli_error($conn) . PHP_EOL, FILE_APPEND);
                             die();
+                        } else {
+                            file_put_contents($log_dir . '/parser.log', ' | User: ' . $username . ' is_deleted' . PHP_EOL, FILE_APPEND);
                         }
                     }
                     die();
