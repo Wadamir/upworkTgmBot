@@ -1,6 +1,6 @@
 # Upwork Telegram Bot
 
-Telegram bot for your upwork feed
+Telegram bot for your upwork RSS-feed
 
 ## Installation
 
