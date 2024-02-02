@@ -4,6 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // test
+// test on github
 
 require_once __DIR__ . '/init.php';
 $log_dir = __DIR__ . '/logs';
