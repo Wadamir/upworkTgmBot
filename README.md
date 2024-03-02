@@ -4,7 +4,7 @@ Telegram bot for your upwork RSS-feed
 
 ## Installation
 
-Just add bot to your tgm account and start using it.
+Just add bot to your tgm account and start using it
 
 ## Usage
 
